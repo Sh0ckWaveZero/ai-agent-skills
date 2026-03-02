@@ -7,7 +7,8 @@ A collection of reusable AI agent skill templates for automating developer workf
 ```
 skills/
 ├── jira-bug/    # Bug fix Code Review summary
-└── jira-cr/     # Change Request (CR) summary
+├── jira-cr/     # Change Request (CR) summary
+└── jira-plan/   # Implementation planner for Feature & Bug tickets
 ```
 
 ## Installation

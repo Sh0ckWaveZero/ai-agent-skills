@@ -8,7 +8,7 @@ This skill guides the agent in generating a Change Request (CR) summary for a pr
 
 ## Trigger
 
-Use this skill when asked to create a change request or generate a CR summary for a Jira ticket (e.g., "Create a CR for MPD-822" or "run jira-cr for [Ticket ID]").
+Use this skill when asked to create a change request or generate a CR summary for a Jira ticket (e.g., "Create a CR for MSL-001" or "run jira-cr for [Ticket ID]").
 
 ## Workflow Instructions
 

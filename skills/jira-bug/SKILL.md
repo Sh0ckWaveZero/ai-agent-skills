@@ -8,7 +8,7 @@ This skill guides the agent in generating a Bug Code Review summary for a provid
 
 ## Trigger
 
-Use this skill when asked to perform a bug review or generate a CR summary for a Jira Bug ticket (e.g., "Create a bug CR for MPD-822" or "run jira-bug for [Ticket ID]").
+Use this skill when asked to perform a bug review or generate a CR summary for a Jira Bug ticket (e.g., "Create a bug CR for MSL-001" or "run jira-bug for [Ticket ID]").
 
 ## Workflow Instructions
 
