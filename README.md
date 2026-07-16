@@ -1,5 +1,9 @@
 # AI Agent Skills
 
+<p align="center">
+  <img src="assets/ai-agent-skills-banner.png" alt="AI Agent Skills — Practical workflows for better engineering" width="100%" />
+</p>
+
 A collection of reusable AI agent skills for automating developer workflows — Git workflow, GitLab MR automation, Jira CR/planning, and React form validation.
 
 ## Quickstart
