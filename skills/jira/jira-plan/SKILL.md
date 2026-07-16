@@ -1,6 +1,7 @@
 ---
 name: jira-plan
-description: Reads a Jira ticket (Feature/Story or Bug) and generates a structured implementation plan with a todo list for the agent to follow when implementing a feature or fixing a bug.
+description: Read a Jira ticket (Feature/Story or Bug) and produce a structured implementation plan with a todo list for the agent to follow.
+disable-model-invocation: true
 ---
 # Jira Implementation Planner Skill
 
@@ -8,9 +9,9 @@ This skill guides the agent in reading a Jira ticket and producing a detailed, a
 
 ## Trigger
 
-Use this skill when asked to plan, analyze, or prepare an implementation strategy for a Jira ticket. Examples:
-- "Plan the implementation for MSL-001"
-- "Read ticket HUMC-123 and create a plan"
+User-invoked: `/jira-plan` — or when asked to plan or prepare an implementation strategy for a Jira ticket. Examples:
+- "Plan the implementation for PROJ-001"
+- "Read ticket PROJ-123 and create a plan"
 - "jira-plan for [Ticket ID]"
 - "วางแผนงานจาก ticket [Ticket ID]"
 - "อ่าน Jira แล้วช่วยวางแผน implement ให้หน่อย"

@@ -1,6 +1,7 @@
 ---
 name: jira-cr
-description: Automates Change Request (CR) summary generation by comparing Jira ticket acceptance criteria with Git staged changes, formatting it via a template, and posting it as a Jira comment.
+description: Generate a Change Request (CR) summary — compare Jira ticket acceptance criteria with Git staged changes, format via template, post as a Jira comment.
+disable-model-invocation: true
 ---
 # Jira Change Request (CR) Skill
 
@@ -8,7 +9,7 @@ This skill guides the agent in generating a Change Request (CR) summary for a pr
 
 ## Trigger
 
-Use this skill when asked to create a change request or generate a CR summary for a Jira ticket (e.g., "Create a CR for MSL-001" or "run jira-cr for [Ticket ID]").
+User-invoked: `/jira-cr` — or when asked to create a CR summary for a Jira ticket (e.g., "Create a CR for PROJ-001", "run jira-cr for [Ticket ID]").
 
 ## Workflow Instructions
 

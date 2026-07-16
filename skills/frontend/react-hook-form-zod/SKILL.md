@@ -1,9 +1,6 @@
 ---
 name: react-hook-form-zod
-description: |
-  Build type-safe validated forms in React using React Hook Form and Zod schema validation. Single schema works on both client and server for DRY validation with full TypeScript type inference via z.infer.
-
-  Use when: building forms with validation, integrating shadcn/ui Form components, implementing multi-step wizards, handling dynamic field arrays with useFieldArray, or fixing uncontrolled to controlled warnings, resolver errors, async validation issues.
+description: Build type-safe validated React forms with React Hook Form and Zod. Single schema validates on client and server with full TypeScript inference via z.infer. Use when building forms with validation, integrating shadcn/ui Form components, implementing multi-step wizards, handling dynamic field arrays (useFieldArray), or fixing uncontrolled-to-controlled warnings, resolver errors, or async validation issues.
 ---
 # React Hook Form + Zod Validation
 

@@ -1,6 +1,7 @@
 ---
 name: jira-bug
-description: Automates Bug fix Code Review summary generation by comparing Jira bug ticket details with Git staged changes, formatting it via a template, and posting it as a Jira comment.
+description: Generate a Bug fix Code Review summary — compare Jira bug ticket details with Git staged changes, format via template, post as a Jira comment.
+disable-model-invocation: true
 ---
 # Jira Bug Code Review Skill
 
@@ -8,7 +9,7 @@ This skill guides the agent in generating a Bug Code Review summary for a provid
 
 ## Trigger
 
-Use this skill when asked to perform a bug review or generate a CR summary for a Jira Bug ticket (e.g., "Create a bug CR for MSL-001" or "run jira-bug for [Ticket ID]").
+User-invoked: `/jira-bug` — or when asked to generate a Bug CR summary for a Jira ticket (e.g., "Create a bug CR for PROJ-001", "run jira-bug for [Ticket ID]").
 
 ## Workflow Instructions
 
