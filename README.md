@@ -31,6 +31,7 @@ That's it — no configuration needed. Each skill ships with its own trigger rul
 | [`jira-bug`](skills/jira/jira-bug/) | user | Generate a Bug CR summary from staged changes, post to Jira |
 | [`jira-cr`](skills/jira/jira-cr/) | user | Generate a Change Request summary from staged changes, post to Jira |
 | [`jira-plan`](skills/jira/jira-plan/) | user | Read a Jira ticket and produce an implementation plan + todo list |
+| [`jira-story-point`](skills/jira/jira-story-point/) | model | Estimate Jira Story Points from ticket evidence and comparable work |
 | [`react-hook-form-zod`](skills/frontend/react-hook-form-zod/) | model | Type-safe React forms with React Hook Form + Zod validation |
 
 ### Invocation types
@@ -60,6 +61,7 @@ These fire automatically when the agent detects the trigger — just work normal
 |---|---|
 | `git-flow` | Create a branch, write a commit, tag a release, or ask where to merge |
 | `react-hook-form-zod` | Build a form, add validation, or hit a resolver/uncontrolled-field error |
+| `jira-story-point` | Ask to estimate, size, or suggest Story Points for a Jira ticket |
 
 Example — just ask naturally:
 
@@ -84,7 +86,8 @@ skills/
 ├── jira/                    # Jira automation
 │   ├── jira-bug/            # Bug fix Code Review summary
 │   ├── jira-cr/             # Change Request (CR) summary
-│   └── jira-plan/           # implementation planner
+│   ├── jira-plan/           # implementation planner
+│   └── jira-story-point/    # Jira story point estimator
 └── frontend/                # Frontend patterns
     └── react-hook-form-zod/ # React Hook Form + Zod validation
 ```
