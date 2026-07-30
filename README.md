@@ -26,6 +26,7 @@ That's it — no configuration needed. Each skill ships with its own trigger rul
 | Skill | Invocation | Description |
 |-------|-----------|-------------|
 | [`git-flow`](skills/git/git-flow/) | model | Git workflow reference — branch naming, commit format, MR targets, tags |
+| [`git-cherry-pick`](skills/git/git-cherry-pick/) | model | Safely apply focused commits from one branch or ref onto another |
 | [`glab-mr`](skills/git/glab-mr/) | user | Create a GitLab MR via `glab` — stage, commit, push, open MR |
 | [`glab-mr-review`](skills/git/glab-mr-review/) | user | Review a GitLab MR and post inline diff comments via `glab` |
 | [`jira-bug`](skills/jira/jira-bug/) | user | Generate a Bug CR summary from staged changes, post to Jira |
@@ -60,6 +61,7 @@ These fire automatically when the agent detects the trigger — just work normal
 | Skill | Fires when you… |
 |---|---|
 | `git-flow` | Create a branch, write a commit, tag a release, or ask where to merge |
+| `git-cherry-pick` | Ask to cherry-pick, backport, or move selected ticket commits between branches |
 | `react-hook-form-zod` | Build a form, add validation, or hit a resolver/uncontrolled-field error |
 | `jira-story-point` | Ask to estimate, size, or suggest Story Points for a Jira ticket |
 
@@ -81,6 +83,7 @@ Example — just ask naturally:
 skills/
 ├── git/                     # Git & GitLab workflow
 │   ├── git-flow/            # branch naming, commit format, MR targets, tags
+│   ├── git-cherry-pick/      # focused commit transfer between branches
 │   ├── glab-mr/             # create GitLab MR via glab CLI
 │   └── glab-mr-review/      # review GitLab MR + inline comments
 ├── jira/                    # Jira automation
