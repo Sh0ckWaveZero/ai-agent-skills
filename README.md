@@ -28,7 +28,7 @@ That's it — no configuration needed. Each skill ships with its own trigger rul
 | [`git-flow`](skills/git/git-flow/) | model | Git workflow reference — branch naming, commit format, MR targets, tags |
 | [`git-cherry-pick`](skills/git/git-cherry-pick/) | model | Safely apply focused commits from one branch or ref onto another |
 | [`glab-mr`](skills/git/glab-mr/) | user | Create a GitLab MR via `glab` — stage, commit, push, open MR |
-| [`glab-mr-review`](skills/git/glab-mr-review/) | user | Review a GitLab MR and post inline diff comments via `glab` |
+| [`glab-mr-review`](skills/git/glab-mr-review/) | user | Review a GitLab MR in draft mode, then optionally post summary and inline diff comments via `glab` |
 | [`jira-bug`](skills/jira/jira-bug/) | user | Generate a Bug CR summary from staged changes, post to Jira |
 | [`jira-cr`](skills/jira/jira-cr/) | user | Generate a Change Request summary from staged changes, post to Jira |
 | [`jira-plan`](skills/jira/jira-plan/) | user | Read a Jira ticket and produce an implementation plan + todo list |
@@ -49,7 +49,7 @@ Type `/<skill-name>` or say the trigger phrase:
 | What you type | What happens |
 |---|---|
 | `/glab-mr` or "สร้าง MR" | Stages relevant files, commits, pushes, opens a GitLab MR with assignee/reviewer |
-| `/glab-mr-review` or paste an MR URL/IID | Reviews the MR diff and posts summary + inline comments |
+| `/glab-mr-review` or paste an MR URL/IID | Reviews the MR, returns a draft first, and posts summary + inline comments only after approval |
 | `/jira-bug PROJ-123` or "Create a bug CR for PROJ-123" | Compares staged changes vs. the Jira bug, posts a CR summary comment |
 | `/jira-cr PROJ-123` or "Create a CR for PROJ-123" | Compares staged changes vs. the ticket AC, posts a CR summary comment |
 | `/jira-plan PROJ-123` or "Plan the implementation for PROJ-123" | Reads the ticket, generates a plan + todo list, waits for your go-ahead |
