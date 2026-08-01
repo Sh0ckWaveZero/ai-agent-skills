@@ -33,6 +33,7 @@ That's it — no configuration needed. Each skill ships with its own trigger rul
 | [`jira-cr`](skills/jira/jira-cr/) | user | Generate a Change Request summary from staged changes, post to Jira |
 | [`jira-plan`](skills/jira/jira-plan/) | user | Read a Jira ticket and produce an implementation plan + todo list |
 | [`jira-story-point`](skills/jira/jira-story-point/) | model | Estimate Jira Story Points from ticket evidence and comparable work |
+| [`jira-mcp`](skills/jira/jira-mcp/) | model | Draft, create, and verify new Jira tickets through Atlassian MCP |
 | [`react-hook-form-zod`](skills/frontend/react-hook-form-zod/) | model | Type-safe React forms with React Hook Form + Zod validation |
 
 ### Invocation types
@@ -64,6 +65,7 @@ These fire automatically when the agent detects the trigger — just work normal
 | `git-cherry-pick` | Ask to cherry-pick, backport, or move selected ticket commits between branches |
 | `react-hook-form-zod` | Build a form, add validation, or hit a resolver/uncontrolled-field error |
 | `jira-story-point` | Ask to estimate, size, or suggest Story Points for a Jira ticket |
+| `jira-mcp` | Ask to create, open, or draft a new Jira ticket from requirements or notes |
 
 Example — just ask naturally:
 
@@ -90,7 +92,8 @@ skills/
 │   ├── jira-bug/            # Bug fix Code Review summary
 │   ├── jira-cr/             # Change Request (CR) summary
 │   ├── jira-plan/           # implementation planner
-│   └── jira-story-point/    # Jira story point estimator
+│   ├── jira-story-point/    # Jira story point estimator
+│   └── jira-mcp/             # create and verify new Jira tickets via Atlassian MCP
 └── frontend/                # Frontend patterns
     └── react-hook-form-zod/ # React Hook Form + Zod validation
 ```
