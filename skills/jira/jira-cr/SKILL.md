@@ -16,18 +16,22 @@ User-invoked: `/jira-cr` — or when asked to create a CR summary for a Jira tic
 1. **Fetch Jira Ticket Information**:
 
    - Identify the user's Jira Cloud ID using the `mcp_atlassian-mcp-server_getAccessibleAtlassianResources` tool (cache this if already known).
-   - Fetch the Jira issue details using `mcp_atlassian-mcp-server_getJiraIssue` with the given Ticket ID.
+   - Fetch the Jira issue details using `mcp_atlassian-mcp-server_getJiraIssue` with the given Ticket ID. Include the `comment` field so existing comments are available for the next step.
    - Extract the **Summary**, **Description**, and **Acceptance Criteria (AC)** from the issue.
-2. **Retrieve Git Staged Changes**:
+2. **Detect Previous CR Summary**:
+
+   - Scan the existing comments for a previously posted CR summary — detect it by the `# Story & CR` heading or the "AI-generated CR summary" banner line.
+   - Note the previous summary's comment ID, posted date, language, and any details it carries that cannot be regenerated from the diff (e.g., screenshots, Branch, Commits).
+3. **Retrieve Git Staged Changes**:
 
    - Use the `run_command` tool to execute `git diff --staged` (or `git diff --cached`) in the current project directory.
    - Analyze the output to understand what code changes are currently staged for commit.
-3. **Analyze and Compare**:
+4. **Analyze and Compare**:
 
    - Compare the staged code changes against the Acceptance Criteria defined in the Jira ticket.
    - Determine if the implementation is complete or if any ACs are missing.
    - Identify the affected areas in the codebase (Configurations, Modules, Features, Components).
-4. **Summarize using Template**:
+5. **Summarize using Template**:
 
    - Format your findings strictly following the CR template below (this template is embedded globally inside the skill):
 
@@ -50,7 +54,12 @@ User-invoked: `/jira-cr` — or when asked to create a CR summary for a Jira tic
    | Features       | [Details or N/A] |
    | Components     | [Details or N/A] |
    ```
-5. **Post Jira Comment**:
+6. **Post Jira Comment**:
 
    - Use the `mcp_atlassian-mcp-server_addCommentToJiraIssue` tool to post the formatted markdown as a comment directly on the Jira ticket.
-   - Add a brief line at the top stating that this is an AI-generated CR summary based on current staged changes.
+   - **First CR summary on the ticket**: add a brief line at the top stating that this is an AI-generated CR summary based on current staged changes.
+   - **A previous CR summary already exists**: the new comment must reference the old one so readers can follow the update history:
+     - Open with an update banner instead of the first-time line, e.g. `> 🔄 Updated CR summary — supersedes the previous summary posted on 2026-08-19 (comment 400128).` Link to the previous comment when possible: `https://<site>.atlassian.net/browse/<TICKET>?focusedCommentId=<commentId>#comment-<commentId>`.
+     - Add a `**Changes since last summary**` section right after the banner listing only what is new or changed (new ACs, changed AC statuses, newly affected areas, scope added beyond the ACs).
+     - Carry forward still-valid information from the previous summary that the diff cannot regenerate (e.g., screenshots, Branch, Commits) — if they still apply, state so explicitly instead of silently dropping them.
+     - Keep the same language as the previous summary unless the user asks for a different language.
