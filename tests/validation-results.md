@@ -29,3 +29,7 @@ The extension was manually checked for policy consistency, and structural/link a
 ## MR-description extension
 
 Added a portable description guide with small/expanded examples, repository template/language precedence, labeled heading emoji, final-diff scope, evidence-specific examples, and preservation of concurrent human edits. Added nine manual workflow scenarios (46 total). Structural/link and whitespace checks passed. These scenarios have not been executed as live agent evaluations or GitLab writes.
+
+## Current-main integration
+
+Reapplied the scoped changes onto current `origin/main` after PR #7 had merged. Preserved the upstream `jira-mcp` skill and README entries, plus review draft/post/follow-up modes and intent analysis. Structural validation now passes for all ten installed skill entrypoints; nine skills are modified by this PR. `git diff --check origin/main...HEAD` passed.
