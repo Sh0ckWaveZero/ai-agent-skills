@@ -19,7 +19,7 @@ npx skills add https://github.com/Sh0ckWaveZero/ai-agent-skills.git
 #    - Or just ask in natural language (model-invoked skills fire on their own)
 ```
 
-That's it — no configuration needed. Each skill ships with its own trigger rules.
+Each skill ships with its own workflow. GitLab and Jira operations require the corresponding CLI or connector, authentication, and project access.
 
 ## Skills
 
@@ -27,10 +27,10 @@ That's it — no configuration needed. Each skill ships with its own trigger rul
 |-------|-----------|-------------|
 | [`git-flow`](skills/git/git-flow/) | model | Git workflow reference — branch naming, commit format, MR targets, tags |
 | [`git-cherry-pick`](skills/git/git-cherry-pick/) | model | Safely apply focused commits from one branch or ref onto another |
-| [`glab-mr`](skills/git/glab-mr/) | user | Create a GitLab MR via `glab` — stage, commit, push, open MR |
-| [`glab-mr-review`](skills/git/glab-mr-review/) | user | Review a GitLab MR in draft mode, then optionally post summary and inline diff comments via `glab` |
-| [`jira-bug`](skills/jira/jira-bug/) | user | Generate a Bug CR summary from staged changes, post to Jira |
-| [`jira-cr`](skills/jira/jira-cr/) | user | Generate a Change Request summary from staged changes, post to Jira |
+| [`glab-mr`](skills/git/glab-mr/) | user | Prepare or publish a scoped GitLab MR; reuse an existing matching MR |
+| [`glab-mr-review`](skills/git/glab-mr-review/) | user | Review against a team standard; evidence-based findings, verdicts, and optional publication |
+| [`jira-bug`](skills/jira/jira-bug/) | user | Generate an evidence-based Bug CR draft; publish when requested |
+| [`jira-cr`](skills/jira/jira-cr/) | user | Generate an evidence-based Change Request draft; publish when requested |
 | [`jira-plan`](skills/jira/jira-plan/) | user | Read a Jira ticket and produce an implementation plan + todo list |
 | [`jira-story-point`](skills/jira/jira-story-point/) | model | Estimate Jira Story Points from ticket evidence and comparable work |
 | [`jira-mcp`](skills/jira/jira-mcp/) | model | Draft, create, and verify new Jira tickets through Atlassian MCP |
@@ -45,15 +45,15 @@ That's it — no configuration needed. Each skill ships with its own trigger rul
 
 ### User-invoked skills
 
-Type `/<skill-name>` or say the trigger phrase:
+Explicitly invoke `/<skill-name>` (or name the skill in a supported client). Natural-language examples below describe intent; automatic discovery depends on the agent and invocation settings:
 
 | What you type | What happens |
 |---|---|
-| `/glab-mr` or "สร้าง MR" | Stages relevant files, commits, pushes, opens a GitLab MR with assignee/reviewer |
-| `/glab-mr-review` or paste an MR URL/IID | Reviews the MR, returns a draft first, and posts summary + inline comments only after approval |
-| `/jira-bug PROJ-123` or "Create a bug CR for PROJ-123" | Compares staged changes vs. the Jira bug, posts a CR summary comment |
-| `/jira-cr PROJ-123` or "Create a CR for PROJ-123" | Compares staged changes vs. the ticket AC, posts a CR summary comment |
-| `/jira-plan PROJ-123` or "Plan the implementation for PROJ-123" | Reads the ticket, generates a plan + todo list, waits for your go-ahead |
+| `/glab-mr` or "สร้าง MR" | Verifies scope and repository conventions, then commits/pushes and creates or updates an MR when requested |
+| `/glab-mr-review` or paste an MR URL/IID | Reviews the MR diff; publishes summary and inline comments only with authorization |
+| `/jira-bug PROJ-123` or "Create a bug CR for PROJ-123" | Compares the selected Git scope with the bug, drafts a summary, and posts when requested |
+| `/jira-cr PROJ-123` or "Create a CR for PROJ-123" | Maps ticket AC to the selected Git scope and verification evidence; posts when requested |
+| `/jira-plan PROJ-123` or "Plan the implementation for PROJ-123" | Reads the ticket, generates a grounded plan + checklist; continues implementation only when requested |
 
 ### Model-invoked skills
 
@@ -71,12 +71,12 @@ Example — just ask naturally:
 
 ```
 "ช่วย branch ใหม่สำหรับ PROJ-456 เรื่อง login throttling หน่อย"
-→ git-flow kicks in: bugfix/PROJ-456-login-throttling, based off main
+→ git-flow checks repository conventions and verified refs before selecting the branch and base
 ```
 
 ```
 "Add a reset-password form with Zod validation"
-→ react-hook-form-zod kicks in: schema with email + password fields, client+server validation
+→ react-hook-form-zod kicks in: inspects the form contract and implements matching client/server validation
 ```
 
 ## Structure
@@ -93,12 +93,12 @@ skills/
 │   ├── jira-cr/             # Change Request (CR) summary
 │   ├── jira-plan/           # implementation planner
 │   ├── jira-story-point/    # Jira story point estimator
-│   └── jira-mcp/             # create and verify new Jira tickets via Atlassian MCP
+│   └── jira-mcp/            # create and verify Jira tickets through MCP
 └── frontend/                # Frontend patterns
     └── react-hook-form-zod/ # React Hook Form + Zod validation
 ```
 
-Each skill lives in its own directory with a `SKILL.md` file.
+Each skill lives in its own directory with a `SKILL.md` file. Branch-specific guidance belongs in linked `references/` files; executable starting points belong in `templates/`. Keep required resources inside the skill so individual installation works.
 
 ## Installation
 
@@ -107,6 +107,18 @@ Install this skill collection using the `npx skills` command:
 ```bash
 npx skills add https://github.com/Sh0ckWaveZero/ai-agent-skills.git
 ```
+
+## Merge request descriptions
+
+`glab-mr` follows the repository template and the [MR description guide](skills/git/glab-mr/references/mr-description.md): explain the problem, final behavior, approach, and actual verification; add review focus, visuals/API examples, or deployment details when useful. Keep small MRs concise and preserve human context when updating.
+
+## Code review standard
+
+`glab-mr-review` includes a [review standard](skills/git/glab-mr-review/references/review-standard.md), [comment format and labeled emoji](skills/git/glab-mr-review/references/comment-format.md), and [calibration cases](skills/git/glab-mr-review/references/review-cases.md). Severity, blocking status, evidence, and verdict are separate. Re-reviews track existing findings and inspect new changes. Emoji can be omitted for repositories that prefer plain text.
+
+## Validation
+
+Run `python3 tests/validate_skills.py` for structural checks and use the [workflow scenarios](tests/skill-workflows.md) to review behavior after changes. Run `git diff --check` as well. These scenarios are review fixtures, not proof of a live GitLab/Jira run. See the [validation record](tests/validation-results.md) for executed checks and limits.
 
 ## Creating a New Skill
 

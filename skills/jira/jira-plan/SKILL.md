@@ -20,8 +20,8 @@ User-invoked: `/jira-plan` — or when asked to plan or prepare an implementatio
 
 ### Step 1: Fetch Jira Ticket Information
 
-- Identify the user's Jira Cloud ID using the `mcp_jira_getAccessibleAtlassianResources` tool (cache if already known).
-- Fetch the Jira issue details using `mcp_jira_getJiraIssue` with the given Ticket ID.
+- Discover the available Jira site/issue tools by capability and resolve the intended site and issue. Reuse verified context; ask only if multiple plausible sites remain.
+- Retrieve the issue using the configured connector. If unavailable, work from user-provided ticket contents and label missing evidence; never invent requirements.
 - Extract the following fields:
   - **Issue Type** (Story, Task, Bug, Sub-task, etc.)
   - **Summary** (title)
@@ -33,6 +33,8 @@ User-invoked: `/jira-plan` — or when asked to plan or prepare an implementatio
 
 ### Step 2: Analyze the Ticket
 
+Inspect repository instructions and relevant implementations, callers, schemas, and tests before finalizing the plan. Record concrete paths and evidence. If repository access is unavailable, label proposed files and technical choices as provisional.
+
 Based on the **Issue Type**, switch to the appropriate analysis mode:
 
 #### For Feature / Story / Task tickets:
@@ -42,7 +44,7 @@ Based on the **Issue Type**, switch to the appropriate analysis mode:
 - Estimate the complexity of each step (Low / Medium / High).
 
 #### For Bug tickets:
-- Understand the root cause or likely cause from the description.
+- Separate confirmed observations from hypotheses. Plan a reproduction and a check that can falsify the suspected cause before choosing a fix.
 - Identify what code area(s) are likely affected.
 - Define the fix strategy (e.g., patch logic, update validation, fix query).
 - List any regression risks or related areas to verify after the fix.
@@ -82,7 +84,7 @@ Format the plan using the appropriate template below.
 
 ### Definition of Done
 - [ ] All ACs are implemented and verified
-- [ ] Unit/integration tests are written
+- [ ] Relevant tests and repository-required checks pass, with evidence recorded
 - [ ] Code reviewed and approved
 - [ ] No regression in related features
 ```
@@ -99,7 +101,7 @@ Format the plan using the appropriate template below.
 [Concise description of the bug and its impact]
 
 ### Root Cause Analysis
-[Likely cause of the bug based on the ticket details]
+[Confirmed evidence, hypotheses, and the next check that distinguishes them]
 
 ### Fix Strategy
 [Describe the approach to fix — what to change and why]
@@ -125,24 +127,16 @@ Format the plan using the appropriate template below.
 
 ### Step 4: Create Todo List
 
-After presenting the plan, use the `TodoWrite` tool to create a structured todo list in the agent session. Each implementation step from the plan should become a separate todo item with appropriate priority:
+Use the available task/planning tool if present; otherwise return a Markdown checklist. Sequence work by dependencies and risk, including verification as part of the relevant implementation step. Keep items pending until execution actually begins.
 
-- Steps marked **High complexity** or steps that **unblock others** → `priority: high`
-- Standard implementation steps → `priority: medium`
-- Testing, cleanup, and verification steps → `priority: low`
+### Step 5: Complete the planning handoff
 
-Mark the first actionable step as `in_progress` to signal readiness to begin.
+For a planning-only request, return the plan without starting implementation. If the user already requested planning and implementation, continue within that authorization after presenting the plan; do not ask for the same permission again. Ask only about unresolved decisions that materially change scope or behavior, while continuing independent investigation where possible.
 
-### Step 5: Ask for Confirmation
-
-Before starting any implementation, ask the user:
-> "The plan is ready. Should I start implementing, or would you like to adjust anything first?"
-
-Only begin coding or making changes when the user explicitly confirms.
+Completion: every known AC has an implementation and verification step; dependencies, confirmed paths, assumptions, and blocking questions are identified. Separate future Definition of Done items from work already completed.
 
 ## Notes
 
-- Always adapt the plan based on existing codebase patterns. If you have access to the project, scan relevant files before finalizing the plan.
-- If the ticket is missing information (no AC, no description), ask the user to clarify before proceeding.
-- For tickets with sub-tasks, plan each sub-task individually and link them in the main plan.
-- This skill does **not** post to Jira automatically — it is a planning tool only. Use `jira-cr` or `jira-bug` skills after implementation for CR summary posting.
+- Missing AC or description makes the plan provisional; ask only for information necessary to resolve material ambiguity.
+- For sub-tasks, preserve their dependencies and boundaries rather than automatically including unrelated linked work.
+- This skill does not post to Jira. After implementation, explicitly invoke `jira-cr` or `jira-bug` if available; when installed alone, provide an evidence-based local summary and use available Jira tools only when publication is requested.
