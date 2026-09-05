@@ -1,245 +1,43 @@
 ---
 name: react-hook-form-zod
-description: Build type-safe validated React forms with React Hook Form and Zod. Single schema validates on client and server with full TypeScript inference via z.infer. Use when building forms with validation, integrating shadcn/ui Form components, implementing multi-step wizards, handling dynamic field arrays (useFieldArray), or fixing uncontrolled-to-controlled warnings, resolver errors, or async validation issues.
----
-# React Hook Form + Zod Validation
-
-**Status**: Production Ready ✅
-**Last Verified**: 2026-03-16
-**Latest Versions**: react-hook-form@7.71.2, zod@4.3.6, @hookform/resolvers@5.2.2
-
+description: Build or debug React Hook Form and Zod validation, including schema transforms, controlled components, dynamic arrays, multi-step forms, and async server errors.
 ---
 
-## Quick Start
+# React Hook Form + Zod
 
-```bash
-npm install react-hook-form@7.71.2 zod@4.3.6 @hookform/resolvers@5.2.2
-```
+## 1. Inspect the existing form contract
 
-**Basic Form Pattern**:
+Read repository instructions, package manifest and lockfile, existing form components, and the submit endpoint. Identify installed React Hook Form, Zod, resolver, and UI component versions before selecting APIs. Use the repository's package manager and compatible dependencies; do not replace versions just because an example uses a different one.
 
-```typescript
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-})
+Determine raw input types, parsed output, defaults, field lifecycle, server request format, and error response shape. Keep validation and payload changes within the requested scope.
 
-type FormData = z.infer<typeof schema>
+## 2. Implement the smallest matching pattern
 
-const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-  resolver: zodResolver(schema),
-  defaultValues: { email: '', password: '' }, // REQUIRED to prevent uncontrolled warnings
-})
+For a basic form, use the complete [form template](templates/basic-form.tsx) and its [shared schema](templates/schema.ts). Adapt the endpoint to the real application contract. The [server validation template](templates/server-validation.ts) shows the matching request and validation response; connect authentication, authorization, and persistence through the real endpoint.
 
-<form onSubmit={handleSubmit(onSubmit)}>
-  <input {...register('email')} />
-  {errors.email && <span role="alert">{errors.email.message}</span>}
-</form>
-```
+- Use `register` for native inputs. For controlled widgets, map `value`, change/blur handlers, name, and ref to the component's actual API. Spread `field` only when those props match; do not register the same field twice.
+- Supply suitable defaults, especially avoiding `undefined` for controlled values. For data loaded after initialization, use the project's reset/values strategy and preserve dirty edits where required.
+- When schema input and output differ, use `useForm<z.input<typeof schema>, Context, z.output<typeof schema>>`. `z.infer` represents output, so it is insufficient as the sole input type for transforms.
+- Validate untrusted requests at the server boundary. Share a schema when raw input contracts match; if the client sends transformed output, validate that wire format with an appropriate server schema rather than accidentally transforming twice.
+- Associate labels and error descriptions with inputs. Use explicit button types, prevent duplicate submits while pending, and expose recoverable failures.
 
-**Server Validation** (CRITICAL - never skip):
+Read [advanced patterns](references/advanced-patterns.md) only for multi-step forms, arrays, controlled widgets, transformations, async validation, or performance work.
 
-```typescript
-// SAME schema on server
-const data = schema.parse(await req.json())
-```
+## 3. Verify the behavior
 
----
+Run repository-required checks and relevant tests for the actual changed form. Verify valid/invalid submission, error placement, request shape, server rejection, and retry behavior. For multi-step forms verify forward/back navigation retains intended values; for arrays verify remove/reorder affects the intended item. Check transformed input/output types with TypeScript.
 
-## Key Patterns
+Completion: requested behavior works with the installed versions, server and client contracts agree, and actual checks and remaining limitations are reported. Templates are starting points, not evidence that the host application was tested.
 
-**useForm Options** (validation modes):
+## Sources
 
-- `mode: 'onSubmit'` (default) - Best performance
-- `mode: 'onBlur'` - Good balance
-- `mode: 'onChange'` - Live feedback, more re-renders
-- `shouldUnregister: true` - Remove field data when unmounted (use for multi-step forms)
+Consult official documentation for the installed versions when behavior is uncertain:
 
-**Zod Refinements** (cross-field validation):
+- [React Hook Form useForm](https://react-hook-form.com/docs/useform)
+- [Resolver input/output typing](https://github.com/react-hook-form/resolvers#typescript)
+- [Zod](https://zod.dev/)
+- [shadcn React Hook Form integration](https://ui.shadcn.com/docs/forms/react-hook-form)
 
-```typescript
-z.object({ password: z.string(), confirm: z.string() })
-  .refine((data) => data.password === data.confirm, {
-    message: "Passwords don't match",
-    path: ['confirm'], // CRITICAL: Error appears on this field
-  })
-```
+Adapt to the UI components already used by the project; verify migration or deprecation claims before proposing a component replacement.
 
-**Zod Transforms**:
-
-```typescript
-z.string().transform((val) => val.toLowerCase()) // Data manipulation
-z.string().transform(parseInt).refine((v) => v > 0) // Chain with refine
-```
-
-**zodResolver** connects Zod to React Hook Form, preserving type safety
-
----
-
-## Registration
-
-**register** (for standard HTML inputs):
-
-```typescript
-<input {...register('email')} /> // Uncontrolled, best performance
-```
-
-**Controller** (for third-party components):
-
-```typescript
-<Controller
-  name="category"
-  control={control}
-  render={({ field }) => <CustomSelect {...field} />} // MUST spread {...field}
-/>
-```
-
-**When to use Controller**: React Select, date pickers, custom components without ref. Otherwise use `register`.
-
----
-
-## Error Handling
-
-**Display errors**:
-
-```typescript
-{errors.email && <span role="alert">{errors.email.message}</span>}
-{errors.address?.street?.message} // Nested errors (use optional chaining)
-```
-
-**Server errors**:
-
-```typescript
-const onSubmit = async (data) => {
-  const res = await fetch('/api/submit', { method: 'POST', body: JSON.stringify(data) })
-  if (!res.ok) {
-    const { errors: serverErrors } = await res.json()
-    Object.entries(serverErrors).forEach(([field, msg]) => setError(field, { message: msg }))
-  }
-}
-```
-
----
-
-## Advanced Patterns
-
-**useFieldArray** (dynamic lists):
-
-```typescript
-const { fields, append, remove } = useFieldArray({ control, name: 'contacts' })
-
-{fields.map((field, index) => (
-  <div key={field.id}> {/* CRITICAL: Use field.id, NOT index */}
-    <input {...register(`contacts.${index}.name` as const)} />
-    {errors.contacts?.[index]?.name && <span>{errors.contacts[index].name.message}</span>}
-    <button onClick={() => remove(index)}>Remove</button>
-  </div>
-))}
-<button onClick={() => append({ name: '', email: '' })}>Add</button>
-```
-
-**Async Validation** (debounce):
-
-```typescript
-const debouncedValidation = useDebouncedCallback(() => trigger('username'), 500)
-```
-
-**Multi-Step Forms**:
-
-```typescript
-const step1 = z.object({ name: z.string(), email: z.string().email() })
-const step2 = z.object({ address: z.string() })
-const fullSchema = step1.merge(step2)
-
-const nextStep = async () => {
-  const isValid = await trigger(['name', 'email']) // Validate specific fields
-  if (isValid) setStep(2)
-}
-```
-
-**Conditional Validation**:
-
-```typescript
-z.discriminatedUnion('accountType', [
-  z.object({ accountType: z.literal('personal'), name: z.string() }),
-  z.object({ accountType: z.literal('business'), companyName: z.string() }),
-])
-```
-
----
-
-## shadcn/ui Integration
-
-**Note**: shadcn/ui deprecated the Form component. Use the Field component for new implementations (check latest docs).
-
-**Legacy Form component**:
-
-```typescript
-<FormField control={form.control} name="username" render={({ field }) => (
-  <FormItem>
-    <FormControl><Input {...field} /></FormControl>
-    <FormMessage />
-  </FormItem>
-)} />
-```
-
----
-
-## Performance
-
-- Use `register` (uncontrolled) over `Controller` (controlled) for standard inputs
-- Use `watch('email')` not `watch()` (isolates re-renders to specific fields)
-- `shouldUnregister: true` for multi-step forms (clears data on unmount)
-
----
-
-## Critical Rules
-
-✅ **Always set defaultValues** (prevents uncontrolled→controlled warnings)
-
-✅ **Validate on BOTH client and server** (client can be bypassed - security!)
-
-✅ **Use `field.id` as key** in useFieldArray (not index)
-
-✅ **Spread `{...field}`** in Controller render
-
-✅ **Use `z.infer<typeof schema>`** for type inference
-
-❌ **Never skip server validation** (security vulnerability)
-
-❌ **Never mutate values directly** (use `setValue()`)
-
-❌ **Never mix controlled + uncontrolled** patterns
-
-❌ **Never use index as key** in useFieldArray
-
----
-
-## Known Issues (12 Prevented)
-
-1. **Zod v4 Type Inference** - [#13109](https://github.com/react-hook-form/react-hook-form/issues/13109) (Closed 2025-11-01): Use `z.infer<typeof schema>`. Resolved in v7.66.x+.
-2. **Uncontrolled→Controlled Warning** - Always set `defaultValues` for all fields
-3. **Nested Object Errors** - Use optional chaining: `errors.address?.street?.message`
-4. **Array Field Re-renders** - Use `key={field.id}` in useFieldArray (not index)
-5. **Async Validation Race Conditions** - Debounce validation, cancel pending requests
-6. **Server Error Mapping** - Use `setError()` to map server errors to fields
-7. **Default Values Not Applied** - Set `defaultValues` in useForm options (not useState)
-8. **Controller Field Not Updating** - Always spread `{...field}` in render function
-9. **useFieldArray Key Warnings** - Use `field.id` as key (not index)
-10. **Schema Refinement Error Paths** - Specify `path` in refinement: `refine(..., { path: ['fieldName'] })`
-11. **Transform vs Preprocess** - Use `transform` for output, `preprocess` for input
-12. **Multiple Resolver Conflicts** - Use single resolver (zodResolver), combine schemas if needed
-
----
-
-## Bundled Resources
-
-**Templates**: basic-form.tsx, advanced-form.tsx, shadcn-form.tsx, server-validation.ts, async-validation.tsx, dynamic-fields.tsx, multi-step-form.tsx, package.json
-
-**References**: zod-schemas-guide.md, rhf-api-reference.md, error-handling.md, performance-optimization.md, shadcn-integration.md, top-errors.md
-
-**Docs**: https://react-hook-form.com/ | https://zod.dev/ | https://ui.shadcn.com/docs/components/form
-
----
-
-**License**: MIT | **Credit**: jezweb/claude-skills | **Last Verified**: 2026-03-16
+Credit: original skill adapted from jezweb/claude-skills.

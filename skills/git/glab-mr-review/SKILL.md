@@ -1,238 +1,69 @@
 ---
 name: glab-mr-review
-description: Review a GitLab merge request, produce an evidence-based draft, and optionally post summary and inline diff comments.
+description: Review a GitLab merge request, produce an evidence-based draft, and publish summary and inline comments when requested.
 disable-model-invocation: true
 ---
 
-# glab-mr-review
+# GitLab MR Review
 
-Review a GitLab merge request with `glab`. Separate analysis from publishing: produce a review draft first, then post it only after the user explicitly approves.
+Invoke explicitly with an MR URL or project and IID. Reviewing or sharing an MR URL authorizes inspection and a draft, not publication. An explicit request to post feedback authorizes publication without another confirmation. Review verdicts are recommendations; approving, merging, resolving discussions, or deleting comments requires the corresponding user instruction.
 
-**Use `glab` for GitLab — not `gh` (GitHub).**
+Operating modes: `draft` returns a local review; `post` publishes prepared feedback within explicit authorization; `follow-up` inspects existing discussions and replies to the requested findings. Resolve the intended mode and any requested focus from the user's instructions; default to draft when publishing was not requested.
 
-## Trigger
+## 1. Capture the review snapshot
 
-User-invoked: `/glab-mr-review` — or when the user asks to review an MR, comment on a merge request, post inline review notes, or shares a GitLab MR URL/IID.
+Verify GitLab host, project, source/target branches, and MR identity from the URL and repository context. Use `glab` with the verified host/project rather than assuming the current checkout or `origin` owns the MR. Inspect installed command help before relying on version-specific flags.
 
-## Safety and operating modes
+Read MR metadata, the full diff, all commits, existing notes/discussions with pagination, and CI status. Record the current diff version's base/start/head SHAs. Fetch both relevant refs, including fork source refs when needed; compare immutable SHAs matching that diff version. If a diff is truncated or a file cannot be retrieved, obtain it separately or report incomplete coverage.
 
-- Default to **draft mode**. Do not create, edit, or delete GitLab notes until the user approves publishing.
-- Treat `Ready`, `Comment`, and `Request changes` as review verdicts. Do not approve the MR itself unless the user explicitly asks for that separate action.
-- Review all commits in the MR, not only the latest commit.
-- Do not report a finding without evidence from the diff, full-file context, tests, or project conventions.
+Completion: scope, snapshot, existing feedback, and unavailable evidence are recorded.
 
-The workflow has three modes:
+## 2. Investigate findings
 
-| Mode | Behavior |
-|------|----------|
-| `draft` | Analyze the MR and return the review without posting anything |
-| `post` | Publish the approved summary and inline comments |
-| `follow-up` | Read existing discussions and reply to or update specific findings |
+Before finding defects, summarize the problem, intended behavior/contract change, affected modules or user flows, and assumptions. Use this understanding to distinguish intentional behavior from regressions.
 
-## Workflow
+Review the complete resulting change, reading surrounding code, callers, contracts, and relevant tests. Check correctness, authorization, edge cases, regressions, and applicable UI behavior. Run focused checks when possible without disturbing the user's worktree.
 
-### 1. Define scope
+For each actionable finding, establish the trigger, code path, observable impact, evidence, and smallest useful location. Distinguish defects introduced or exposed by this change from unrelated pre-existing issues. Challenge assumptions against upstream contracts before declaring a blocker. Exclude speculative problems and duplicate feedback; report an existing unresolved finding by its discussion link when useful.
 
-Resolve the project and MR IID from the URL or current repository. Confirm the intended mode and any review focus such as security, performance, business logic, or tests.
+Read and apply the [review standard](references/review-standard.md) on every review. Record coverage for the core dimensions and select additional API/data/UI checks based on the actual change. Apply repository requirements first; explain any conflict instead of substituting personal preferences.
 
-If the user did not grant posting permission, use `draft` mode.
+Completion: every reported finding has supporting evidence; coverage and actual test results are explicit. No findings does not prove absence of bugs.
 
-### 2. Gather MR context
+## 3. Prepare the review draft
 
-Start with the MR metadata, discussions, and complete diff:
+Use the [comment and summary format](references/comment-format.md), including its labeled emoji conventions. Return the MR link, source/target, reviewed head SHA, verdict, coverage, findings with file/line evidence, tests run, and limitations. Put suggested tests separately from executed tests. If publication was not requested, stop with this complete draft.
 
-```bash
-glab mr view <iid> --comments
-glab mr diff <iid>
-```
+For authorized publication, prepare all bodies and anchors first. Use a general summary for findings that cannot be accurately anchored; do not attach them to an unrelated nearby changed line.
 
-When branch names, commit SHAs, or the project path are needed:
+## 4. Publish against the current diff
 
-```bash
-glab api "projects/<url-encoded-project-path>/merge_requests/<iid>"
-```
+Re-read the MR diff version and discussions immediately before writing. If base/start/head SHAs changed, refresh the affected review and anchors before publication. Skip equivalent existing feedback. Reuse authorization for the same requested review scope; ask only if the scope materially changes.
 
-Inspect pipeline status and relevant test results when available. If local comparison is useful, fetch the source branch and compare the actual target and source refs:
+Prefer supported installed `glab` commands. If inline options are unavailable, use the [GitLab Discussions API](https://docs.gitlab.com/api/discussions/#create-new-merge-request-thread):
 
-```bash
-git fetch origin <source-branch>
-git diff origin/<target>...origin/<source> --stat
-git diff origin/<target>...origin/<source> -- path/to/file
-```
+- POST to `projects/:id/merge_requests/:merge_request_iid/discussions` with the prepared body and a text position.
+- Set `position[base_sha]`, `position[start_sha]`, and `position[head_sha]` from the verified diff version, with both old/new paths.
+- For an added line use `new_line`; for a removed line use `old_line`; for a context line provide both line numbers as required by the diff. Use the API's line-range schema only when needed.
 
-Read the full source-branch file when the changed lines need surrounding context:
+Pass multiline text through structured tool/API arguments or a literal temporary body file using supported file-input options. Keep arbitrary comment text out of shell interpolation.
 
-```bash
-git show 'origin/<source-branch>:path/to/file'
-```
+Post the summary, then inline findings sequentially, recording returned IDs. Verify each result's body and position. On invalid-position errors, recheck diff version, paths, and line mapping; the error alone does not establish that a line is unchanged. On a timeout or uncertain write, read discussions before retrying to avoid duplicates.
 
-### 3. Understand the change
+Completion: every intended post is verified or individually reported as failed/pending. Preserve existing human comments; do not delete a mistaken note without authorization.
 
-Before looking for defects, summarize:
+## 5. Report publication status
 
-- What problem the MR is solving
-- What behavior or contract is changing
-- Which modules, APIs, data, or user flows are affected
-- Which assumptions the implementation relies on
+Return verified summary/discussion links, reviewed SHA, posted/skipped/failed counts, and remaining limitations. Distinguish a draft, a posted recommendation, an actual GitLab approval, pending CI, and a merged MR.
 
-Use this summary to distinguish intended behavior from regressions.
+## 6. Re-review requested changes
 
-### 4. Review the implementation
+Compare the previously reviewed snapshot with the current snapshot and inspect all new commits, not only the lines mentioned in earlier findings. Revisit affected callers/contracts and relevant regression checks. If history was rewritten or the target changed, rebuild the comparison rather than assuming the previous diff still applies.
 
-Check the complete change across these dimensions:
+Track each prior finding by its existing ID/link as `fixed`, `still present`, or `needs evidence`, with the current evidence and SHA. Confirm the cause was addressed and check for new regressions; a changed line alone does not prove a fix. Reassess the verdict using the same review standard. Report newly introduced findings separately and avoid reposting the original finding. Publish replies only within the requested scope; resolving discussions requires explicit authorization.
 
-1. Correctness and business logic
-2. Error handling and edge cases
-3. Security, authorization, validation, and sensitive data
-4. Performance and resource usage
-5. Compatibility with existing callers and data
-6. Maintainability and project conventions
-7. Tests, test coverage, and CI expectations
-8. UX or API behavior when relevant
+Completion: prior findings are accounted for, new changes are covered or limitations named, and the updated verdict refers to the current snapshot.
 
-Run the smallest relevant checks when the repository provides them. Report checks that were not run instead of implying that they passed.
+## Maintaining this skill
 
-### 5. Create and validate findings
-
-Group findings by severity:
-
-| Level | Meaning |
-|-------|---------|
-| Critical | Security issue, data loss, broken production behavior, or a blocker that must be fixed before merge |
-| Medium | A likely bug, missing edge case, compatibility problem, or important missing test |
-| Low | Optional improvement, maintainability concern, or non-blocking nit |
-
-Each finding must contain:
-
-- A short, specific title
-- The severity
-- The triggering condition or evidence
-- The impact
-- A practical suggested fix or next step
-
-Before publishing, remove false positives, merge duplicate findings, and check existing discussions so the same issue is not reported twice.
-
-### 6. Map findings to valid diff lines
-
-Inline comments must point to a line present in the MR diff. Verify with:
-
-```bash
-git diff origin/<target>...origin/<source> -- path/to/file
-```
-
-| Finding location | Flag |
-|------------------|------|
-| Added or changed line | `--line N` or `--line N:M` |
-| Removed line | `--old-line N` |
-| File-level concern | `--file path` without a line |
-
-If the problem is in unchanged code, comment on the nearest changed line only when it provides useful context; otherwise put the finding in the summary. If GitLab rejects a line, re-check the diff and relocate the finding or move it to the summary.
-
-### 7. Produce the review draft
-
-Return the draft in this format before publishing:
-
-```markdown
-## Code Review: MR !<iid>
-
-**MR:** <url>
-**Source → Target:** `<source>` → `<target>`
-**Verdict:** Ready / Comment / Request changes
-
-### Summary
-<intent, overall assessment, and main risks>
-
-### Findings
-
-#### Critical
-- ...
-
-#### Medium
-- ...
-
-#### Low
-- ...
-
-### Suggested Test Plan
-- [ ] ...
-
-### Checks
-- Passed: ...
-- Not run: ...
-```
-
-Ask for explicit approval before switching from `draft` to `post`.
-
-### 8. Publish the approved review
-
-Post the whole-MR summary first:
-
-```bash
-glab mr note create <iid> -m "$(cat <<'EOF'
-## Code Review Summary
-
-**Verdict:** <ready / request changes / comment>
-
-- Finding 1
-- Finding 2
-EOF
-)"
-```
-
-Then post inline comments one at a time and confirm each succeeds:
-
-```bash
-glab mr note create <iid> \
-  --file path/to/file.ext \
-  --line 42 \
-  -m "$(cat <<'EOF'
-**Medium — Short title**
-
-Evidence, impact, and suggested fix.
-EOF
-)"
-```
-
-Useful options:
-
-```bash
-glab mr note create <iid> --file path/to/file --line 10:15 -m "message"
-glab mr note create <iid> --file path/to/file --old-line 7 -m "message"
-glab mr note create <iid> --reply <discussion-id> -m "message"
-glab mr note create <iid> -m "message" --unique
-```
-
-Inline diff comments are experimental in `glab`. On a line-not-found error, do not keep retrying the same line: re-check the diff and use a valid changed line or the summary note.
-
-### 9. Correct publishing mistakes
-
-Record note IDs and URLs as each post succeeds. To delete a mistaken note:
-
-```bash
-glab api --method DELETE \
-  "projects/<url-encoded-project-path>/merge_requests/<iid>/notes/<note_id>"
-```
-
-URL-encode project paths (`/` becomes `%2F`).
-
-### 10. Report the result
-
-After draft or publishing, report:
-
-- MR URL and source → target branches
-- Verdict and findings by severity
-- Checks run and checks not run
-- Summary note URL, or `not posted`
-- Number of successful inline comments
-- Any comments that could not be anchored or published
-
-## Quick reference
-
-| Goal | Command |
-|------|---------|
-| View MR and discussions | `glab mr view <iid> --comments` |
-| View diff | `glab mr diff <iid>` |
-| General comment | `glab mr note create <iid> -m "..."` |
-| Inline comment | `glab mr note create <iid> --file <path> --line <n> -m "..."` |
-| Reply to discussion | `glab mr note create <iid> --reply <discussion-id> -m "..."` |
-
+Use the [review calibration cases](references/review-cases.md) after changing the standard or comment rules. They include expected defects and valid implementations that should not produce findings. Static document checks do not measure reviewer accuracy; evaluate actual review outputs against these cases when testing agent behavior.

@@ -5,14 +5,14 @@ description: Estimate Jira Story Points from a ticket's requirements, acceptance
 
 # Jira Story Point Estimator
 
-Estimate the total effort for a PBI to reach the team's Definition of Done (DoD), using Jira evidence and the team's Fibonacci scale. The estimate includes implementation, testing, review, documentation/configuration, and the work needed to push or release the PBI when those activities are part of the DoD. Do not update the Jira issue unless the user explicitly asks for that after reviewing the estimate.
+Estimate the total effort for a PBI to reach the team's Definition of Done (DoD), using Jira evidence and the team's Fibonacci scale. The estimate includes implementation, testing, review, documentation/configuration, and the work needed to push or release the PBI when those activities are part of the DoD. Produce a local estimate by default. An explicit instruction to estimate and update authorizes the specified write after preparing the estimate; ask only if the destination field or intended value remains ambiguous.
 
 ## Workflow
 
 ### 1. Fetch the ticket
 
-1. Identify the Jira cloud/site resource with the configured Jira MCP resource-discovery tool, usually `mcp_atlassian-mcp-server_getAccessibleAtlassianResources`.
-2. Fetch the issue with the configured Jira issue tool, usually `mcp_atlassian-mcp-server_getJiraIssue`.
+1. Discover available Jira tools by capability and resolve the intended site from verified task context.
+2. Fetch the issue using the available issue-retrieval tool.
 3. Extract the issue key, type, summary, description, acceptance criteria, priority, labels, components, parent/linked issues, dependencies, and any existing Story Point field.
 4. Extract the DoD if it is present in the Jira ticket, project documentation, or team context. If it is unavailable, use the DoD coverage checklist below and mark the affected items as assumptions.
 5. If the ticket is missing a description or acceptance criteria, state that the estimate is provisional and list the missing information. Do not fill gaps with invented requirements.
@@ -25,7 +25,7 @@ Search for 3–8 recently completed issues from the same project with available 
 2. Same implementation surface (frontend, backend, data migration, integration, or cross-system).
 3. Same level of ambiguity and testing/deployment impact.
 
-Use the configured Jira search tool, usually `mcp_atlassian-mcp-server_searchJiraIssuesUsingJql`, with a narrow JQL query. If search or Story Point history is unavailable, continue with the rubric below and label the confidence as Low rather than failing.
+Use the available Jira search tool with a narrow JQL query. If search or Story Point history is unavailable, continue with the rubric below and label the confidence as Low rather than failing.
 
 Never use the current ticket's existing Story Point as independent evidence. Treat it only as a value to compare against and explicitly call out if it conflicts with the estimate.
 
@@ -39,21 +39,9 @@ Break the ticket into deliverable slices, such as API/domain logic, database/sch
 - Uncertainty: unknown requirements, unfamiliar code, or risk of rework.
 - DoD completion: tests, code review, documentation/configuration, acceptance evidence, deployment/push, and post-release checks required by the team.
 
-Estimate the whole PBI through DoD, not just coding effort. Use the team's Fibonacci scale: `1, 2, 3, 5, 8, 13, 21`. Use the duration bands below as the team's planning calibration, not as an exact hour calculation or a delivery promise.
+Estimate the whole PBI through DoD, not just coding effort. Use the team's verified scale and anchor issues. Resolve calibration in this order: explicit team/user guidance → current documented team rubric → comparable completed work. If these disagree, explain the conflict and reduce confidence rather than silently averaging or overriding explicit guidance.
 
-Use this team anchor rubric:
-
-| Points | DoD-inclusive planning duration |
-|---:|---|
-| 1 | 2 hours or less |
-| 2 | About half a day |
-| 3 | 1 day |
-| 5 | 2–3 days |
-| 8 | 1 week |
-| 13 | 1–2 weeks |
-| 21 | More than 2 weeks, possibly a month; split before planning when practical |
-
-Select the smallest point value whose duration band and complexity cover the complete DoD effort. Move up one Fibonacci bucket when uncertainty, integration, regression validation, or release work is material—not merely because the description is long. If the PBI exceeds the 21-point band, recommend splitting it rather than inventing a larger value.
+When no team calibration is available, consult the [fallback calibration](references/calibration.md) and label it as an assumption, not an established team rule. Read that reference only for fallback sizing or an explicit request to use its duration bands. Select points using complete scope, complexity, uncertainty, and DoD; avoid a mechanical uncertainty bump when those costs are already included. Recommend splitting work beyond the team's usable upper bound.
 
 ### 4. Produce the estimate
 
@@ -103,11 +91,11 @@ Keep the recommendation to one primary value. Use a range only to expose uncerta
 
 ## Guardrails
 
-- Story Points remain the primary estimate. The duration bands are this team's calibration guide; do not treat them as exact hours, individual task quotas, or a delivery-date promise.
+- Story Points remain the primary estimate. Any duration bands used are approximate calibration, not exact hours, quotas, or delivery promises.
 - Include all DoD work in the point selection. Do not label a PBI as 1 point merely because the code change is small if testing, review, release, or acceptance makes the complete work larger.
 - Do not infer points from priority, assignee, labels, or ticket age alone.
 - Do not count unrelated linked issues as part of the estimate; list them as dependencies unless the ticket explicitly includes their work.
 - Distinguish missing acceptance criteria from technical uncertainty.
 - If comparable issues disagree widely, report the spread and lower confidence; do not average blindly.
 - Flag requirements that are too broad, cross-team, or uncertain for reliable sizing and propose a split.
-- Keep any write operation (editing Story Points, adding a Jira comment, or transitioning status) opt-in and ask for confirmation immediately before it.
+- Perform only the explicitly requested write. Resolve the project's actual Story Point field and supported value before updating; re-read it afterward. Report the verified value or failure. Updating points does not authorize a comment or status transition.

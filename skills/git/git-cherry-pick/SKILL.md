@@ -37,7 +37,7 @@ git branch --all --no-color
 
 Fetch named refs before comparing them. If source, target, or scope is unclear, ask one focused question.
 
-Before mutation, show:
+Before mutation, show the resolved plan. Continue within the user's existing authorization; ask only when unresolved ambiguity changes the result or a requested next action lacks authorization:
 
 ```text
 Plan:
@@ -47,7 +47,7 @@ Plan:
 - Commits: <short SHAs and count>
 - Files: <paths or count>
 - New branch: <working branch>
-Proceed?
+Authorization: <already authorized steps; any missing publication authorization>
 ```
 
 ## 2. Select commits and create the branch
@@ -67,7 +67,7 @@ For ticket-focused work:
 - Include prerequisites only when the selected change depends on them.
 - Reject unrelated modules, tickets, or an entire integration branch included by accident.
 
-After confirmation:
+Once the source, target, and commit scope are resolved and the requested operation is authorized:
 
 ```bash
 git fetch <remote> <target>
@@ -108,9 +108,9 @@ git diff --check
 git log --oneline <remote>/<target>..HEAD
 ```
 
-Run the narrowest relevant checks. Stop if the diff contains secrets, environment files, unrelated changes, unexpected dependency changes, or a different file/commit set than the plan.
+Run repository-required checks and the narrowest relevant tests. Stop if the diff contains secrets, environment files, unrelated changes, unexpected dependency changes, or a different file/commit set than the plan.
 
-After confirmation to publish:
+If publication was requested or already authorized:
 
 ```bash
 git push -u <remote> <working-branch>
@@ -125,7 +125,7 @@ After creating or updating the MR/PR, re-read it and verify:
 - Displayed SHA matches the pushed branch.
 - File count and checks match the verified scope.
 
-If the hosting service shows stale status, refetch or poll once before reporting success. Do not close or delete another request automatically unless the user authorizes superseding it.
+Report pending CI explicitly; successful publication is not passing CI or a completed merge. If the hosting service shows stale status, refetch or poll once before reporting success. Do not close or delete another request automatically unless the user authorizes superseding it.
 
 ## Safety Boundaries
 
