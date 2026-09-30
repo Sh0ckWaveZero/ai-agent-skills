@@ -62,6 +62,12 @@ Input: Assigned code scope is fully inspected, no blockers are found, and the on
 
 Expected: plain `No blocking findings`, CI pending, tests not run. No ✅ overall verdict or fabricated passing checks. If the job were required evidence for a material unassessed behavior, explain that difference rather than treating every pending job identically.
 
+## K. Readable inline issue
+
+Input: A verified finding describes an external API succeeding before a local conditional write fails. Retry is rejected by the API as already executed, leaving local status stale. A concurrent cancellation can also make the local write fail. A temporary mock reproduced API success, local write failure, and rejected retry. Failure/retry and concurrent cancellation regression tests are proposed, not executed. Prepare one High severity inline issue, F3, for publication.
+
+Expected: one root-cause finding with a short bold heading and a separate severity paragraph. Explain the trigger and stale-status impact briefly. Separate Evidence, Suggested change, and Verification with bold labels and real blank lines; use evidence bullets and backticks for code identifiers. Distinguish the executed mock from proposed regressions. Do not claim a database transaction can undo an external HTTP side effect. Do not wrap the published body in a code fence, emit literal newline escapes, or flatten all fields into one paragraph.
+
 ## Evaluation record
 
 For each actual run record case ID, model/configuration, skill revision, output, expected findings detected, false positives, unsupported impact claims, verdict, and comment-format compliance. Compare before/after runs under the same setup. Report missed defects and false positives separately; no passing aggregate score can hide a missed authorization or data-integrity defect. Calibrate thresholds with the team before using these cases as an approval gate.

@@ -34,7 +34,7 @@ Completion: every reported finding has supporting evidence; coverage and actual 
 
 Use the [comment and summary format](references/comment-format.md), including its labeled emoji conventions. Return the MR link, source/target, reviewed head SHA, verdict, coverage, findings with file/line evidence, tests run, and limitations. Put suggested tests separately from executed tests. If publication was not requested, stop with this complete draft.
 
-For authorized publication, prepare all bodies and anchors first. Use a general summary for findings that cannot be accurately anchored; do not attach them to an unrelated nearby changed line.
+For authorized publication, prepare all bodies and anchors first. Format inline issues as short Markdown sections with blank lines and evidence bullets according to the comment format; never flatten the finding into a single paragraph. Use a general summary for findings that cannot be accurately anchored; do not attach them to an unrelated nearby changed line.
 
 ## 4. Publish against the current diff
 

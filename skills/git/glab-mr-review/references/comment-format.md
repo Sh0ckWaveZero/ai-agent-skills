@@ -2,6 +2,8 @@
 
 Use the user's requested language, otherwise the established review language. Keep conventional type/status tokens consistent. Write about the code and its effects, not the author's ability. One finding covers one root cause; group duplicate manifestations unless separate remediation is needed.
 
+Use familiar words in explanations and section labels. Avoid jargon when a plain description conveys the same meaning; keep exact code identifiers when needed to locate the problem. For Thai reviews, use `ปัญหาที่พบ`, `ความรุนแรง`, `หลักฐานที่พบ`, `แนวทางแก้`, `ทดสอบแล้ว`, and `ควรทดสอบเพิ่ม` instead of English section labels. Conventional type/status tokens and stable finding IDs remain unchanged. Describe what happens and how it affects the user before implementation details.
+
 ## Emoji vocabulary
 
 Use at most one emoji at the start of a finding heading or summary status, always followed by explicit text. Omit emoji if the user or repository prefers plain text. Emoji indicates purpose/status, not severity; do not decorate every paragraph or rely on color alone.
@@ -18,17 +20,33 @@ Use plain `issue (non-blocking)` for a deferred/non-blocking defect. Use plain `
 
 ## Finding structure
 
-```text
-🚫 issue (blocking): <specific defect and required behavior>
-Severity: <Critical | High | Medium | Low>
+```markdown
+🚫 **issue (blocking) — F1: <short, specific defect>**
 
-<Trigger and observable impact, explained through the relevant code path.>
-Evidence: <file/line, verified contract, test, or reproduction; distinguish inference.>
-Suggested change: <smallest necessary correction, allowing valid alternatives.>
-Verification: <test that would demonstrate the correction; label as proposed unless run.>
+**Severity:** <Critical | High | Medium | Low>
+
+<One short paragraph describing the trigger, code path, and observable impact.>
+
+**Evidence**
+
+- <File/line or verified contract, using inline code for identifiers.>
+- <Test or reproduction supporting the finding; distinguish inference.>
+
+**Suggested change**
+
+<Smallest necessary correction, allowing valid alternatives.>
+
+**Verification**
+
+- Executed: <actual check and result, or explicitly not run.>
+- Proposed: <regression scenario that would demonstrate the correction.>
 ```
 
-Use a concise paragraph instead of labeled lines when it preserves the same information. Assign stable local IDs such as F1/F2 and retain them during re-review. Link existing discussion IDs after publication. Choose severity from impact, not alarming wording. Do not quote secrets or private data in examples.
+Inline issues must use rendered Markdown sections with real blank lines between the title, severity, impact, evidence, suggested change, and verification. A single newline can render as a space in GitLab; do not rely on it to separate sections or concatenate labeled fields into one paragraph. Publish the Markdown body itself, without an enclosing code fence or literal `\\n` sequences.
+
+Keep the title short and severity on its own paragraph. Use short paragraphs (usually one to three sentences) and bullets for multiple evidence points or scenarios. Format code identifiers, statuses, and paths with backticks; link precise evidence when available. Keep executed and proposed checks separate, and do not invent checks to fill the template. Omit an empty optional bullet. Long logs and broader review coverage belong in the summary or a linked artifact, while the inline comment retains enough evidence to stand alone.
+
+A brief suggestion, question, or fixed-status reply can use a heading and a short paragraph without every section. Do not collapse a multi-part defect into a single paragraph. Assign stable local IDs such as F1/F2 and retain them during re-review. Link existing discussion IDs after publication. Choose severity from impact, not alarming wording. Do not quote secrets or private data in examples.
 
 ```text
 💡 suggestion (non-blocking): Consolidate the repeated status mapping
