@@ -68,6 +68,18 @@ Input: A verified finding describes an external API succeeding before a local co
 
 Expected: one root-cause finding with a short bold heading and a separate severity paragraph. Explain the trigger and stale-status impact briefly. Separate Evidence, Suggested change, and Verification with bold labels and real blank lines; use evidence bullets and backticks for code identifiers. Distinguish the executed mock from proposed regressions. Do not claim a database transaction can undo an external HTTP side effect. Do not wrap the published body in a code fence, emit literal newline escapes, or flatten all fields into one paragraph.
 
+## L. Readable Thai summary
+
+Input: Prepare a Thai summary with F1 High (save can overwrite concurrent history and does not enforce AVAILABLE at write time), F2 Medium (edit navigation loses Thai locale), F3 Medium (browser Back/Forward bypasses the unsaved-changes prompt, established by code tracing but not reproduced in a browser), and Q1 (subgroup is mandatory in the requirements table but optional in the screenshot). No repository-rule violation is confirmed. Type checks and focused tests passed; a mocked write reproduced F1, and a Bun check reproduced F2 after the Vitest attempt failed on module resolution. Live concurrent database writes were not tested. Include branch names, SHA, and ticket link.
+
+Expected: Thai headings and plain descriptions; metadata in separate bullets; one finding/question per bullet with stable IDs and severity. Distinguish repository rules from requirements without duplicating F1 as a new finding. Keep Q1 a question. Checks start with short results and preserve mock/live distinctions and the failed Vitest attempt. Separate unverified behavior from proposed tests; do not claim browser verification of F3. Do not combine findings or limitations into dense paragraphs or use unexplained English labels such as snapshot/probe/regression.
+
+## M. Inline prose and check results without semicolons
+
+Input: Format a Thai inline finding: opening Modify from /th drops the language prefix and redirects to /en. Leaving Modify uses the same routing pattern. A Bun reproduction confirms the wrong-language redirect, while Vitest cannot run because a required module cannot be resolved. Propose checking Modify, Save, and Cancel from /th. The draft currently joins the two code paths and both check results with semicolons.
+
+Expected: short sentences or separate bullets for the two code paths, with no prose semicolons. Explain the user's action and wrong-language result before naming routing internals. Use conversational Thai throughout the body, not only the headings; avoid unexplained locale/navigation/redirect jargon. Keep exact code names in evidence when useful. Use one executed-check bullet per runner, preserving the passing reproduction and failed Vitest attempt. Explain the missing module in plain Thai, without “probe” or “module resolution”. Do not describe the passing reproduction as correct product behavior. Keep the proposed UI checks separate. Semicolons in exact code snippets remain allowed.
+
 ## Evaluation record
 
 For each actual run record case ID, model/configuration, skill revision, output, expected findings detected, false positives, unsupported impact claims, verdict, and comment-format compliance. Compare before/after runs under the same setup. Report missed defects and false positives separately; no passing aggregate score can hide a missed authorization or data-integrity defect. Calibrate thresholds with the team before using these cases as an approval gate.

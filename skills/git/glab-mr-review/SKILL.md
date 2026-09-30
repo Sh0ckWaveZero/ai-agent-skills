@@ -32,7 +32,7 @@ Completion: every reported finding has supporting evidence; coverage and actual 
 
 ## 3. Prepare the review draft
 
-Use the [comment and summary format](references/comment-format.md), including its labeled emoji conventions. Return the MR link, source/target, reviewed head SHA, verdict, coverage, findings with file/line evidence, tests run, and limitations. Put suggested tests separately from executed tests. If publication was not requested, stop with this complete draft.
+Use the [comment and summary format](references/comment-format.md), including its labeled emoji conventions. Keep summary metadata in separate bullets and each finding/question in its own bullet; use familiar words in the user's language. Return the MR link, source/target, reviewed head SHA, verdict, coverage, findings with file/line evidence, tests run, and limitations. Put suggested tests separately from executed tests and unverified behavior. If publication was not requested, stop with this complete draft.
 
 For authorized publication, prepare all bodies and anchors first. Format inline issues as short Markdown sections with blank lines and evidence bullets according to the comment format; never flatten the finding into a single paragraph. Use a general summary for findings that cannot be accurately anchored; do not attach them to an unrelated nearby changed line.
 
