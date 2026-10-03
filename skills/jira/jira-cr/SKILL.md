@@ -52,8 +52,8 @@ User-invoked: `/jira-cr` — use this skill explicitly when asked to create a CR
 
    | Summary                   | Screenshots |
    | :------------------------ | :---------- |
-   | 1. [What the change does for this criterion, with status] |             |
-   | 2. [What the change does for this criterion, with status] |             |
+   | 1. [What the change does for this criterion, with status] | [Image or evidence status] |
+   | 2. [What the change does for this criterion, with status] | [Image or evidence status] |
 
    | Affected Areas | Descriptions     |
    | :------------- | :--------------- |
@@ -65,6 +65,14 @@ User-invoked: `/jira-cr` — use this skill explicitly when asked to create a CR
 
    - Number the rows but do not write `AC1` or `AC2` labels. The team examples describe each criterion directly.
    - **Heading color**: the team template draws the heading as a level-1, bold heading with a `textColor` mark of `#36b37e` (green) on `Story & CR`. Markdown cannot carry text color, so publish the comment as ADF (`contentFormat: adf`) when the comment tool supports it. If ADF is unavailable, post the markdown without color and tell the user.
+   - **Markdown fallback**: a markdown table cell is one line. Keep one row per item, join the parts of a cell with ` / `, and do not use nested lists or line breaks inside a cell.
+   - **Write for the whole team** (developers, BA, QA). A reader should understand each row without reading the code:
+     - Describe each row from the user's side: what the user does and what they see, using screen names. Explain any technical term you cannot avoid.
+     - Write each status in plain language, in the summary's language. In Thai use `ทำแล้ว ทดสอบผ่าน`, `ทำแล้ว ทดสอบไม่ผ่าน`, `ทำแล้ว ยังไม่ได้ทดสอบ`, `ทำบางส่วน`, `มีอยู่เดิมก่อนการ์ดนี้`, or `ยังยืนยันไม่ได้`. Use a tested status only when a check was actually run or reported, and always state the result. Add the scope in a few words, and the source when someone else ran it, for example `ทดสอบผ่านบน UAT โดย QA (comment 170406)`. Never write a bare `ทดสอบแล้ว`. Reading the code is not a test.
+     - Put a before and after screenshot pair in the Screenshots cell when both exist.
+     - In the Features cell, add a `ควรทดสอบซ้ำ:` line naming the nearby screens or features the change can affect, found by checking the callers. Leave the line out when no callers were checked.
+     - Mark behavior the ticket did not ask for with `(เพิ่มนอกเกณฑ์)` in the Features cell so BA and QA can confirm it.
+     - Before posting, reread the comment and cut filler, repeated points, and wording that sounds machine-written.
 6. **Draft and Publish**:
 
    - **First CR summary on the ticket**: add a brief line at the top stating that this is an AI-generated CR summary based on the inspected change scope.
@@ -73,7 +81,7 @@ User-invoked: `/jira-cr` — use this skill explicitly when asked to create a CR
      - Do not add a changes section. Update the tables in place. If the previous summary says something the current code contradicts, correct it in the table and name the correction in the banner line.
      - Carry forward still-valid information from the previous summary that the diff cannot regenerate (e.g., screenshots, Branch, Commits) — if they still apply, state so explicitly instead of silently dropping them.
      - Keep the same language as the previous summary unless the user asks for a different language.
-   - **Language and screenshots**: for a first summary, use the language of the team template examples (Thai, with English product and UI names) unless the user or repository instructions say otherwise. Leave the Screenshots cell empty unless a screenshot is supplied or carried forward from the previous summary.
+   - **Language and screenshots**: for a first summary, use the language of the team template examples (Thai, with English product and UI names) unless the user or repository instructions say otherwise. Add an image when there is one: a screenshot, or for a change with no screen, test output, an API response, or a database record before and after. An image is not required on every row, but do not leave the cell empty. When an image is expected but not attached yet, write `รอแนบภาพ` and name what to attach, such as `รอแนบภาพ: ผลรัน test`. When no image is needed, write `ไม่มีภาพ`. Write `ภาพเดิมใน comment <id>` when the image is carried forward. Keep the pass or fail result in the Summary cell, and do not color this text.
 
    - Prepare the complete comment first. A request to summarize or review ends with a local draft unless publication was explicitly requested. If the user already asked to post it, continue without asking again. If publication is needed but not yet authorized, request approval only for the completed, reviewable draft.
    - Before publishing, confirm the issue and re-read relevant prior summaries to avoid duplicates or superseding a newer update. If the selected changes moved since analysis, refresh the evidence and draft first.
