@@ -40,7 +40,7 @@ User-invoked: `/jira-bug` — use this skill explicitly when asked to generate a
    - For API work, describe the endpoint/method, relevant request fields, authorization, processing and source-data resolution, duplicate behavior, response statuses, and scope when supported by the code. Mark unknown contracts explicitly.
 5. **Summarize using Template**:
 
-   - Keep the headings and tables of the bug template below and add no other sections. Report what was checked and what was not run in your reply to the user, not in the comment:
+   - Keep the headings and tables of the bug template below and add no other sections. Put each row's status, result, and a short scope in the table. Report the commands and logs behind them to the user in your reply, not in the comment:
 
    ```markdown
    # Bug
