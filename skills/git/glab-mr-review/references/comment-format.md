@@ -31,17 +31,19 @@ The evidence can then name the exact router, path, and language settings. The su
 
 ## Emoji vocabulary
 
-Use at most one emoji at the start of a finding heading or summary status, always followed by explicit text. Omit emoji if the user or repository prefers plain text. Emoji indicates purpose/status, not severity; do not decorate every paragraph or rely on color alone.
+Use at most one emoji at the start of a finding heading or summary status, always followed by explicit text. Omit emoji if the user or repository prefers plain text. Emoji indicates purpose/status, not severity; do not decorate every paragraph or rely on color alone. In a summary, the verdict line carries the status emoji. Finding and question bullets and section headings carry none, except that a re-review status bullet may start with its status emoji.
 
 | Emoji | Meaning |
 |---|---|
 | 🚫 | Blocking issue or `Changes required` |
 | 💡 | Non-blocking suggestion or nitpick |
-| ❓ | Question requiring context |
-| 🔎 | `Review incomplete` or re-review `needs evidence` |
+| ❓ | Question to the author or team that needs context to resolve |
+| 🔎 | Review-level or prior-finding status: `Review incomplete` or re-review `needs evidence`. Never a question to the author |
 | ✅ | Verified result or re-review `fixed`, with the specific evidence stated |
 
-Use plain `issue (non-blocking)` for a deferred/non-blocking defect. Use plain `No blocking findings` rather than a green check: not finding a blocker is not proof that tests passed or the code is bug-free. For `still present`, retain the finding's blocking label; do not imply every unresolved item blocks merge.
+A new candidate with an unresolved premise is a ❓ question. 🔎 marks the state of the review or of a prior finding, not a new candidate.
+
+Use plain `issue (non-blocking)` for a deferred/non-blocking defect. Use plain `No blocking findings` rather than a green check: not finding a blocker is not proof that tests passed or the code is bug-free. For `still present`, retain the finding's original classification: use 🚫 while it is blocking and plain `issue (non-blocking)` otherwise, so an unresolved item does not read as a merge blocker unless it is one.
 
 ## Finding structure
 
