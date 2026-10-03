@@ -32,6 +32,8 @@ Completion: every reported finding has supporting evidence; coverage and actual 
 
 ## 3. Prepare the review draft
 
+Before formatting, perform the lead-review judgment pass in the [review standard](references/review-standard.md#lead-review-judgment). Validate every candidate against the current snapshot, deduplicate by root cause, and decide whether to require a fix, suggest an improvement, request evidence, or dismiss it. This pass applies to a single reviewer as well as any authorized independent reviews; reviewer agreement is not proof. Do not publish rejected candidates or create a second severity/verdict scale.
+
 Use the [comment and summary format](references/comment-format.md), including its labeled emoji conventions. Keep summary metadata in separate bullets and each finding/question in its own bullet; use familiar words in the user's language. Return the MR link, source/target, reviewed head SHA, verdict, coverage, findings with file/line evidence, tests run, and limitations. Put suggested tests separately from executed tests and unverified behavior. If publication was not requested, stop with this complete draft.
 
 For authorized publication, prepare all bodies and anchors first. Format inline issues as short Markdown sections with blank lines and evidence bullets according to the comment format; never flatten the finding into a single paragraph. Use a general summary for findings that cannot be accurately anchored; do not attach them to an unrelated nearby changed line.
@@ -46,7 +48,7 @@ Prefer supported installed `glab` commands. If inline options are unavailable, u
 - Set `position[base_sha]`, `position[start_sha]`, and `position[head_sha]` from the verified diff version, with both old/new paths.
 - For an added line use `new_line`; for a removed line use `old_line`; for a context line provide both line numbers as required by the diff. Use the API's line-range schema only when needed.
 
-Pass multiline text through structured tool/API arguments or a literal temporary body file using supported file-input options. Keep arbitrary comment text out of shell interpolation.
+Pass multiline text through structured tool/API arguments or a literal temporary body file using supported file-input options. Create that file in the session's temporary directory, not in the user's worktree, and remove it after use. Keep arbitrary comment text out of shell interpolation.
 
 Post the summary, then inline findings sequentially, recording returned IDs. Verify each result's body and position. On invalid-position errors, recheck diff version, paths, and line mapping; the error alone does not establish that a line is unchanged. On a timeout or uncertain write, read discussions before retrying to avoid duplicates.
 
@@ -60,7 +62,7 @@ Return verified summary/discussion links, reviewed SHA, posted/skipped/failed co
 
 Compare the previously reviewed snapshot with the current snapshot and inspect all new commits, not only the lines mentioned in earlier findings. Revisit affected callers/contracts and relevant regression checks. If history was rewritten or the target changed, rebuild the comparison rather than assuming the previous diff still applies.
 
-Track each prior finding by its existing ID/link as `fixed`, `still present`, or `needs evidence`, with the current evidence and SHA. Confirm the cause was addressed and check for new regressions; a changed line alone does not prove a fix. Reassess the verdict using the same review standard. Report newly introduced findings separately and avoid reposting the original finding. Publish replies only within the requested scope; resolving discussions requires explicit authorization.
+Track each prior finding by its existing ID/link as `fixed`, `still present`, or `needs evidence`, with the current evidence and SHA. Confirm the cause was addressed and check for new regressions; a changed line alone does not prove a fix. Run the [lead-review judgment](references/review-standard.md#lead-review-judgment) on each prior-finding status and each new candidate, then reassess the verdict using the same review standard. Report newly introduced findings separately and avoid reposting the original finding. Publish replies only within the requested scope; resolving discussions requires explicit authorization.
 
 Completion: prior findings are accounted for, new changes are covered or limitations named, and the updated verdict refers to the current snapshot.
 

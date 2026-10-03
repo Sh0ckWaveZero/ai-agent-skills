@@ -122,6 +122,8 @@ Each skill lives in its own directory with a `SKILL.md` file. Branch-specific gu
 
 ## Code review standard
 
+Before reporting findings, the lead reviewer verifies candidates, merges duplicate root causes, and decides whether to require a fix, suggest an improvement, request evidence, or dismiss the claim. This works with a single reviewer and does not require a model panel; agreement never substitutes for evidence.
+
 `glab-mr-review` includes a [review standard](skills/git/glab-mr-review/references/review-standard.md), [comment format and labeled emoji](skills/git/glab-mr-review/references/comment-format.md), and [calibration cases](skills/git/glab-mr-review/references/review-cases.md). Severity, blocking status, evidence, and verdict are separate. Re-reviews track existing findings and inspect new changes. Emoji can be omitted for repositories that prefer plain text.
 
 ## Validation

@@ -80,6 +80,24 @@ Input: Format a Thai inline finding: opening Modify from /th drops the language 
 
 Expected: short sentences or separate bullets for the two code paths, with no prose semicolons. Explain the user's action and wrong-language result before naming routing internals. Use conversational Thai throughout the body, not only the headings; avoid unexplained locale/navigation/redirect jargon. Keep exact code names in evidence when useful. Use one executed-check bullet per runner, preserving the passing reproduction and failed Vitest attempt. Explain the missing module in plain Thai, without “probe” or “module resolution”. Do not describe the passing reproduction as correct product behavior. Keep the proposed UI checks separate. Semicolons in exact code snippets remain allowed.
 
+## N. Agreement contradicted by an upstream guard
+
+Input: Two independent reviewers flag a missing owner check in a handler. The inspected route middleware validates that exact resource and rejects non-owners before the handler runs. Ownership cannot change concurrently. A third reviewer cites the middleware. The requested review does not authorize publication.
+
+Expected: dismiss the missing-owner claim using the middleware evidence despite the majority agreement. No blocker or inline comment is prepared for that claim. Briefly explain the disagreement when useful; do not claim an executed authorization test from inspection alone.
+
+## O. Duplicate root cause and an independent defect
+
+Input: One candidate identifies a changed response field that breaks an inspected consumer. Another identifies the same consumer crash and recommends the same contract fix. A third identifies a separate missing ownership predicate with no upstream guard. All triggers are established in the reviewed snapshot.
+
+Expected: two retained blocking issues, not three. Merge the response candidates, preserve the independent authorization finding, and classify severity by actual impact. Verdict is Changes required.
+
+## P. Unresolved premise and an optional improvement
+
+Input: A reviewer suspects retries duplicate an external operation, but the provider's idempotency contract is inaccessible. Retry integrity is a required review dimension. Another candidate suggests a clearer local variable name without a functional defect. No supported blocker exists.
+
+Expected: request the provider contract or a focused retry check rather than asserting duplicate operations. The naming suggestion is non-blocking and may be omitted if it offers no useful improvement. Verdict is Review incomplete because the retry premise is material.
+
 ## Evaluation record
 
 For each actual run record case ID, model/configuration, skill revision, output, expected findings detected, false positives, unsupported impact claims, verdict, and comment-format compliance. Compare before/after runs under the same setup. Report missed defects and false positives separately; no passing aggregate score can hide a missed authorization or data-integrity defect. Calibrate thresholds with the team before using these cases as an approval gate.
