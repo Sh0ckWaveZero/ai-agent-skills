@@ -24,7 +24,7 @@ Reproduce the visible state using the relevant viewport, data, and interactions.
 
 ## Review
 
-Resolve the exact diff and relevant requirements, separate defects from questions, and attach findings to evidence. Review authorization permits analysis; publication follows the user's request. Re-read the current head and anchors before posting authorized comments. For a GitLab MR, `glab-mr-review` is explicit-invocation only: suggest it to the user, and otherwise review directly.
+Resolve the exact diff and relevant requirements, separate defects from questions, and attach findings to evidence. Review authorization permits analysis; publication follows the user's request. Re-read the current head and anchors before posting authorized comments. For a GitLab MR, follow the optional-integration rules in `SKILL.md`: read and follow `glab-mr-review` when the user has explicitly invoked or named it in the request. Otherwise suggest it or review directly without loading it.
 
 ## Delivery and resume
 

@@ -73,7 +73,8 @@ Missing information warrants a question when different answers would materially 
 | Refactoring or migration | Caller inventory and before/after behavior comparison |
 | Performance | Baseline and comparison under the same workload |
 | UI | Visible state and interaction verified in the available client |
-| Review or handoff | Exact diff, evidence-backed findings, and current artifact state |
+| Review | Exact diff and evidence-backed findings |
+| Delivery and resume | Verified delivery state and current artifacts |
 
 Mixed tasks use the main outcome as their primary workflow and add checks for other affected surfaces. A UI feature might need both acceptance-criteria checks and browser verification; it does not need an unrelated performance investigation.
 
@@ -109,7 +110,7 @@ This example illustrates the process; it is not a recorded test of the skill.
 
 ## Tools and optional integrations
 
-The skill uses available tools rather than requiring a fixed connector namespace. It can use installed `git-flow` or `react-hook-form-zod` for their specific operations. `jira-plan`, `glab-mr`, and `glab-mr-review` set `disable-model-invocation`, so the skill suggests the one that fits to the user instead of invoking it. When the user has already invoked one of them together with `engineering-mode`, the agent reads and follows both. Without them, it follows repository instructions directly. The verified remote host determines GitHub or GitLab tooling.
+The skill uses available tools rather than requiring a fixed connector namespace. It can use installed `git-flow` or `react-hook-form-zod` for their specific operations. `jira-plan`, `glab-mr`, and `glab-mr-review` set `disable-model-invocation`, so the skill suggests the one that fits to the user instead of invoking it. When the user explicitly invokes or names one of these skills in the request together with `engineering-mode`, the agent reads and follows both. If a relevant specialized skill is not installed, the agent follows repository instructions directly. The verified remote host determines GitHub or GitLab tooling.
 
 It uses the current model and requires no model panel. Delegation depends on authorization and available tools. It creates no background automation or permanent cross-task mode by itself.
 
