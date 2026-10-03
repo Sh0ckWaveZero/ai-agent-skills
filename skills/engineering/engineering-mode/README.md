@@ -1,6 +1,6 @@
 # Engineering Mode
 
-[English](README.md) | [Thai](README.th.md)
+[English](README.md) | [ภาษาไทย](README.th.md)
 
 Engineering Mode guides an agent through scoped engineering work: understand the requested behavior, choose a suitable workflow, implement the change, and collect evidence for the result. It is an instruction-based skill, not an executable framework or a background service.
 
@@ -16,7 +16,7 @@ The client discovers the name and description from `SKILL.md`. When the skill is
 
 ## When to use it
 
-Use it for feature implementation, bug diagnosis, behavior-preserving refactoring, migrations, performance investigation, UI verification, or review and delivery. A simple one-line edit usually does not need a full workflow. A plan-only request produces a plan; an explanation-only request produces an explanation.
+Use it for feature implementation, bug diagnosis, behavior-preserving refactoring, migrations, performance investigation, UI verification, or review and delivery. A trivial, low-impact edit usually does not need a full workflow, but a one-line change to authorization or a query still does. A plan-only request produces a plan; an explanation-only request produces an explanation.
 
 ## Invocation
 
@@ -73,7 +73,8 @@ Missing information warrants a question when different answers would materially 
 | Refactoring or migration | Caller inventory and before/after behavior comparison |
 | Performance | Baseline and comparison under the same workload |
 | UI | Visible state and interaction verified in the available client |
-| Review or handoff | Exact diff, evidence-backed findings, and current artifact state |
+| Review | Exact diff and evidence-backed findings |
+| Delivery and resume | Verified delivery state and current artifacts |
 
 Mixed tasks use the main outcome as their primary workflow and add checks for other affected surfaces. A UI feature might need both acceptance-criteria checks and browser verification; it does not need an unrelated performance investigation.
 
@@ -109,7 +110,7 @@ This example illustrates the process; it is not a recorded test of the skill.
 
 ## Tools and optional integrations
 
-The skill uses available tools rather than requiring a fixed connector namespace. It can use installed `git-flow`, `jira-plan`, `react-hook-form-zod`, `glab-mr-review`, or `glab-mr` for their specific operations. Without them, it follows repository instructions directly. The verified remote host determines GitHub or GitLab tooling.
+The skill uses available tools rather than requiring a fixed connector namespace. It can use installed `git-flow` or `react-hook-form-zod` for their specific operations. `jira-plan`, `glab-mr`, and `glab-mr-review` set `disable-model-invocation`, so the skill suggests the one that fits to the user instead of invoking it. When the user explicitly invokes or names one of these skills in the request together with `engineering-mode`, the agent reads and follows both. If a relevant specialized skill is not installed, the agent follows repository instructions directly. The verified remote host determines GitHub or GitLab tooling.
 
 It uses the current model and requires no model panel. Delegation depends on authorization and available tools. It creates no background automation or permanent cross-task mode by itself.
 

@@ -37,6 +37,26 @@ Use `issue` for a demonstrated defect, `suggestion` for an improvement, `questio
 
 Mark `blocking` when a demonstrated defect violates the agreed behavior, permissions, data integrity, compatibility, or a mandatory repository requirement and must be addressed in this MR. Medium and Low defects can be blocking; explain why. Mark optional improvements and personal preferences `non-blocking`. A documented team decision may defer a defect; record that decision and remaining risk rather than quietly downgrading it. Missing tests alone require a concrete unverified behavior or mandatory test requirement to justify blocking.
 
+## Lead-review judgment
+
+Before presenting findings, the lead reviewer checks every candidate against the reviewed snapshot. This is a judgment step even when one agent performs the entire review; it does not require extra agents or model changes.
+
+1. Verify the claimed trigger, execution path, observed or established impact, and applicable requirement. Read upstream guards, callers, and relevant contracts that could disprove it. Record inspection evidence separately from executed checks.
+2. Merge candidates describing the same root cause and impact into one finding. Retain distinct consequences and relevant locations without counting them as duplicate blockers. Separate defects that require different fixes.
+3. Decide the disposition using the existing classification below. Explain the rationale and the smallest useful next action. Severity remains an impact rating; disposition does not replace severity or the final verdict.
+4. If evidence conflicts, resolve the relevant premise through source, contract, or a focused check. When a material premise remains unknown, ask for evidence and report incomplete coverage rather than asserting a defect. Multiple reviewers agreeing does not establish correctness; one supported finding can still block.
+
+| Disposition | Existing finding classification | Report behavior |
+|---|---|---|
+| Require a fix | Supported `issue`, `blocking` | Include trigger, impact, evidence, severity, and why this MR must address it |
+| Suggest an improvement | Non-blocking `issue`, `suggestion`, or useful `nitpick` | Explain benefit or remaining defect and tradeoff; omit personal preferences without useful impact |
+| Request evidence | `question` with an unresolved premise | State what is unknown and the check that can resolve it; use `Review incomplete` when the gap is material |
+| Dismiss | Disproved, duplicate, irrelevant, or unsupported candidate | Omit from the draft and inline comments unless the user asks for the decision trail |
+
+Keep a brief working rationale for dismissed candidates when it explains a contested claim or reviewer disagreement, but leave it out of the draft and published comments. Do not require a large rejection log on every review. If the user asks for the decision trail, include the candidate, disposition, and evidence without inflating the reported finding count. Existing discussions remain part of the record; dismissal does not authorize deleting or resolving them.
+
+Completion: each retained finding has an evidence-based disposition, duplicate counts are removed, and unresolved material premises remain visible. Apply the verdict rules below to the retained findings and coverage gaps.
+
 ## Verdict
 
 - `Changes required`: at least one supported blocking finding remains. Include any coverage limitations alongside it.

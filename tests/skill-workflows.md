@@ -4,12 +4,19 @@ For each scenario, read the named skills and check that their instructions produ
 
 | Scenario | Skills | Expected behavior |
 |---|---|---|
+| User names engineering-mode and glab-mr-review in plain language without a slash command | engineering-mode, glab-mr-review | Read both skills, including the Review reference; produce a draft unless publication was requested. |
+| User names engineering-mode and jira-plan or glab-mr for their requested operation | engineering-mode, jira-plan, glab-mr | Load the explicitly named specialized skill only; follow existing authorization for the operation. |
+| User asks engineering-mode to review an MR without naming glab-mr-review | engineering-mode | Suggest the review skill or review directly; do not automatically load an explicit-only skill. |
+| Review candidates repeat the same root cause and an upstream guard disproves another candidate | glab-mr-review | Apply lead judgment before reporting: merge duplicates and dismiss the disproved candidate without publishing it. |
+| A required contract is unavailable and no supported blocker exists | glab-mr-review | Retain a question and report Review incomplete rather than inventing a defect. |
+| User requests plain text for a review or re-review | glab-mr-review | Omit all emoji while preserving finding type, severity, status, and verdict. |
+| Re-review confirms a fix, a remaining blocker, and an unresolved prior finding | glab-mr-review | Track fixed, still present, and needs evidence with current evidence; use status emoji only where allowed and keep summary finding bullets undecorated. |
 | User invokes engineering-mode for a plan only | engineering-mode | Return the plan; do not implement or publish. |
 | Feature is implemented and type checks pass, but browser is unavailable | engineering-mode | Report type compatibility as passed and UI behavior as unverified. |
 | User requests a fix without publication | engineering-mode | Complete local implementation and verification; no automatic push, PR/MR, or merge. |
 | Specialized skills or delegation tools are unavailable | engineering-mode | Continue with supported tools and repository instructions; no mandatory panel or model switch. |
 | Repeated patches fail the same check | engineering-mode | Revisit the diagnosis and shared assumption using failure evidence. |
-| GitLab publication was authorized and the write times out | engineering-mode, glab-mr | Read the remote state before retrying; verify any created request. |
+| User explicitly names engineering-mode and glab-mr, authorizes publication, and the write times out | engineering-mode, glab-mr | Read the remote state before retrying; verify any created request. |
 | User names `release/2.x` as target; repo also has `develop` | git-flow, glab-mr | Preserve the explicit target and fetch/verify it; no default replacement. |
 | Repository is GitHub and has only `main` | git-flow, glab-mr | Recognize GitHub and use its workflow; no GitLab command or invented `develop`. |
 | Unrelated files were staged before the request | glab-mr | Preserve that index/worktree content and isolate the requested commit. |

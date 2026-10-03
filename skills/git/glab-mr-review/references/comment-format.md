@@ -31,17 +31,19 @@ The evidence can then name the exact router, path, and language settings. The su
 
 ## Emoji vocabulary
 
-Use at most one emoji at the start of a finding heading or summary status, always followed by explicit text. Omit emoji if the user or repository prefers plain text. Emoji indicates purpose/status, not severity; do not decorate every paragraph or rely on color alone.
+Use at most one emoji at the start of a finding heading or summary status, always followed by explicit text. Omit emoji if the user or repository prefers plain text. Emoji indicates purpose/status, not severity; do not decorate every paragraph or rely on color alone. In a summary, the verdict line carries the status emoji. Finding and question bullets and section headings carry none, except that a re-review status bullet may start with its status emoji.
 
 | Emoji | Meaning |
 |---|---|
 | 🚫 | Blocking issue or `Changes required` |
 | 💡 | Non-blocking suggestion or nitpick |
-| ❓ | Question requiring context |
-| 🔎 | `Review incomplete` or re-review `needs evidence` |
+| ❓ | Question to the author or team that needs context to resolve |
+| 🔎 | Review-level or prior-finding status: `Review incomplete` or re-review `needs evidence`. Never a question to the author |
 | ✅ | Verified result or re-review `fixed`, with the specific evidence stated |
 
-Use plain `issue (non-blocking)` for a deferred/non-blocking defect. Use plain `No blocking findings` rather than a green check: not finding a blocker is not proof that tests passed or the code is bug-free. For `still present`, retain the finding's blocking label; do not imply every unresolved item blocks merge.
+A new candidate with an unresolved premise is a ❓ question. 🔎 marks the state of the review or of a prior finding, not a new candidate.
+
+Use plain `issue (non-blocking)` for a deferred/non-blocking defect. Use plain `No blocking findings` rather than a green check: not finding a blocker is not proof that tests passed or the code is bug-free. For `still present`, retain the finding's original classification: use 🚫 while it is blocking and plain `issue (non-blocking)` otherwise, so an unresolved item does not read as a merge blocker unless it is one.
 
 ## Finding structure
 
@@ -67,7 +69,7 @@ Use plain `issue (non-blocking)` for a deferred/non-blocking defect. Use plain `
 - Proposed: <regression scenario that would demonstrate the correction.>
 ```
 
-Inline issues must use rendered Markdown sections with real blank lines between the title, severity, impact, evidence, suggested change, and verification. A single newline can render as a space in GitLab; do not rely on it to separate sections or concatenate labeled fields into one paragraph. Publish the Markdown body itself, without an enclosing code fence or literal `\\n` sequences.
+Inline issues must use rendered Markdown sections with real blank lines between the title, severity, impact, evidence, suggested change, and verification. A single newline can render as a space in GitLab; do not rely on it to separate sections or concatenate labeled fields into one paragraph. Publish the Markdown body itself, without an enclosing code fence or literal `\n` sequences.
 
 Keep the title short and severity on its own paragraph. Use short paragraphs (usually one to three sentences) and bullets for multiple evidence points or scenarios. Format code identifiers, statuses, and paths with backticks; link precise evidence when available. Keep executed and proposed checks separate, and do not invent checks to fill the template. Omit an empty optional bullet. Long logs and broader review coverage belong in the summary or a linked artifact, while the inline comment retains enough evidence to stand alone.
 

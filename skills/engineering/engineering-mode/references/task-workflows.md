@@ -22,9 +22,11 @@ Record the workload, environment, and baseline. Measure the relevant path with p
 
 Reproduce the visible state using the relevant viewport, data, and interactions. Use supplied visual references to identify concrete differences. Verify the edited flow in an available browser or native client, including the state that triggered the mismatch. Capture evidence when useful and avoid exposing sensitive data. If only source or build checks are possible, explicitly leave visual and interaction behavior unverified.
 
-## Review and handoff
+## Review
 
-For review, resolve the exact diff and relevant requirements, separate defects from questions, and attach findings to evidence. Review authorization permits analysis; publication follows the user's request. Re-read the current head and anchors before posting authorized comments.
+Resolve the exact diff and relevant requirements, separate defects from questions, and attach findings to evidence. Review authorization permits analysis; publication follows the user's request. Re-read the current head and anchors before posting authorized comments. For a GitLab MR, follow the optional-integration rules in `SKILL.md`: read and follow `glab-mr-review` when the user has explicitly invoked or named it in the request. Otherwise suggest it or review directly without loading it.
+
+## Delivery and resume
 
 For delivery, inspect the final change and requested target, run applicable checks, and prepare descriptions from the complete diff. Reuse a matching PR/MR when appropriate. Report local edits, commits, pushed changes, open requests, CI, merge, and deployment as separate states.
 
