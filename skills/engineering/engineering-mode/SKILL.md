@@ -1,6 +1,6 @@
 ---
 name: engineering-mode
-description: Execute multi-step engineering work (feature, bug fix, refactor, migration, performance or UI check) with task-specific checks and reviewable evidence. Use when the change needs verification beyond a trivial edit; skip for one-line edits, plan-only, or explanation-only requests. Also supports explicit /engineering-mode invocation.
+description: Execute multi-step engineering work (feature, bug fix, refactor, migration, performance or UI check) with task-specific checks and reviewable evidence. Use when the change needs verification beyond a trivial edit; skip for trivial, low-impact edits, plan-only, or explanation-only requests. Also supports explicit /engineering-mode invocation.
 ---
 
 # Engineering Mode
@@ -44,7 +44,7 @@ For mixed work, use the primary outcome to choose the workflow and add checks fo
 - Prefer a focused change that fits the existing design. Add a helper, script, or codemod only when it removes repeated work or makes verification reproducible.
 - Remove obsolete code only inside the requested scope and after checking its callers.
 
-Use available tools by capability. If a relevant specialized skill is installed, read it for that operation: `git-flow` for branch conventions, `jira-plan` for ticket requirements, `react-hook-form-zod` for form contracts, or `glab-mr` for requested publication. These are optional integrations, not dependencies: when unavailable, perform the operation directly using repository instructions and supported tools. `glab-mr-review` is explicit-invocation only: for a GitLab MR review, suggest the user invoke it, and otherwise review directly. Verify the remote host before selecting GitHub or GitLab tooling.
+Use available tools by capability. If a relevant specialized skill is installed, invoke or read it for that operation: `git-flow` for branch conventions or `react-hook-form-zod` for form contracts. Skills that set `disable-model-invocation: true` are user-invoked: `jira-plan` (ticket requirements), `glab-mr` (requested publication), and `glab-mr-review` (GitLab review). Do not invoke or load these yourself. Suggest the one that fits, and otherwise perform the operation directly. All of these are optional integrations, not dependencies: when unavailable, perform the operation directly using repository instructions and supported tools. Verify the remote host before selecting GitHub or GitLab tooling.
 
 Use the current model unless the user specifies another. Delegate only when the user or applicable instructions authorize delegation; assign distinct ownership and preserve other workers' changes. Do not require Cursor commands, named models, review panels, or a second agent to complete ordinary work.
 
@@ -59,3 +59,7 @@ Use the current model unless the user specifies another. Delegate only when the 
 Report the result, evidence, remaining limitations, and delivery state concisely in the user's language. Distinguish passed, failed, skipped, and blocked checks when present. Do not claim live UI, database, concurrency, deployment, or CI success from source inspection.
 
 Complete authorized work without repeated approval. Skill invocation does not itself authorize posting comments, pushing, creating PRs/MRs, merging, deploying, scheduling work, or editing persistent memory. Resolve those actions from the user's actual request. Preparation and local verification should produce a concrete result before any necessary approval question.
+
+## Inspiration
+
+Inspired by the task routing and evidence-oriented approach described in [pstack's README at c47b128](https://github.com/cursor/plugins/blob/c47b12849e43f18d5c374c7069c744cc55b0ea00/pstack/README.md). This is an independently written adaptation for this collection; it does not install or depend on pstack.

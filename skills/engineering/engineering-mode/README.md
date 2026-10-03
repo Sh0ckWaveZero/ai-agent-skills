@@ -16,7 +16,7 @@ The client discovers the name and description from `SKILL.md`. When the skill is
 
 ## When to use it
 
-Use it for feature implementation, bug diagnosis, behavior-preserving refactoring, migrations, performance investigation, UI verification, or review and delivery. A simple one-line edit usually does not need a full workflow. A plan-only request produces a plan; an explanation-only request produces an explanation.
+Use it for feature implementation, bug diagnosis, behavior-preserving refactoring, migrations, performance investigation, UI verification, or review and delivery. A trivial, low-impact edit usually does not need a full workflow, but a one-line change to authorization or a query still does. A plan-only request produces a plan; an explanation-only request produces an explanation.
 
 ## Invocation
 
@@ -109,7 +109,7 @@ This example illustrates the process; it is not a recorded test of the skill.
 
 ## Tools and optional integrations
 
-The skill uses available tools rather than requiring a fixed connector namespace. It can use installed `git-flow`, `jira-plan`, `react-hook-form-zod`, or `glab-mr` for their specific operations. `glab-mr-review` is explicit-invocation only, so for a GitLab MR review the skill suggests it to the user instead of invoking it. Without them, it follows repository instructions directly. The verified remote host determines GitHub or GitLab tooling.
+The skill uses available tools rather than requiring a fixed connector namespace. It can use installed `git-flow` or `react-hook-form-zod` for their specific operations. `jira-plan`, `glab-mr`, and `glab-mr-review` set `disable-model-invocation`, so the skill suggests the one that fits to the user instead of invoking it. Without them, it follows repository instructions directly. The verified remote host determines GitHub or GitLab tooling.
 
 It uses the current model and requires no model panel. Delegation depends on authorization and available tools. It creates no background automation or permanent cross-task mode by itself.
 
