@@ -1,6 +1,6 @@
 # Engineering Mode
 
-[English](README.md) | [Thai](README.th.md)
+[English](README.md) | [ภาษาไทย](README.th.md)
 
 Engineering Mode guides an agent through scoped engineering work: understand the requested behavior, choose a suitable workflow, implement the change, and collect evidence for the result. It is an instruction-based skill, not an executable framework or a background service.
 
