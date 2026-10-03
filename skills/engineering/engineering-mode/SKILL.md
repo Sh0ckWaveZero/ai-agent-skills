@@ -44,7 +44,7 @@ For mixed work, use the primary outcome to choose the workflow and add checks fo
 - Prefer a focused change that fits the existing design. Add a helper, script, or codemod only when it removes repeated work or makes verification reproducible.
 - Remove obsolete code only inside the requested scope and after checking its callers.
 
-Use available tools by capability. If a relevant specialized skill is installed, read it for that operation: `git-flow` for branch conventions, `jira-plan` for ticket requirements, `react-hook-form-zod` for form contracts, `glab-mr-review` for GitLab review, or `glab-mr` for requested publication. These are optional integrations, not dependencies: when unavailable, perform the operation directly using repository instructions and supported tools. Verify the remote host before selecting GitHub or GitLab tooling.
+Use available tools by capability. If a relevant specialized skill is installed, read it for that operation: `git-flow` for branch conventions, `jira-plan` for ticket requirements, `react-hook-form-zod` for form contracts, or `glab-mr` for requested publication. These are optional integrations, not dependencies: when unavailable, perform the operation directly using repository instructions and supported tools. `glab-mr-review` is explicit-invocation only: for a GitLab MR review, suggest the user invoke it, and otherwise review directly. Verify the remote host before selecting GitHub or GitLab tooling.
 
 Use the current model unless the user specifies another. Delegate only when the user or applicable instructions authorize delegation; assign distinct ownership and preserve other workers' changes. Do not require Cursor commands, named models, review panels, or a second agent to complete ordinary work.
 
