@@ -1,5 +1,7 @@
 # AI Agent Skills
 
+[English](README.md) | [Thai](README.th.md)
+
 <p align="center">
   <img src="assets/ai-agent-skills-banner.png" alt="AI Agent Skills — Practical workflows for better engineering" width="100%" />
 </p>
@@ -15,8 +17,8 @@ npx skills add https://github.com/Sh0ckWaveZero/ai-agent-skills.git
 # 2. Restart your agent session (so it picks up new skills)
 
 # 3. Use a skill — two ways:
-#    - Type a slash command:  /glab-mr
-#    - Or just ask in natural language (model-invoked skills fire on their own)
+#    - Name the skill, or use /glab-mr in clients supporting slash commands
+#    - Or describe the task; automatic selection depends on the client
 ```
 
 Each skill ships with its own workflow. GitLab and Jira operations require the corresponding CLI or connector, authentication, and project access.
@@ -25,6 +27,7 @@ Each skill ships with its own workflow. GitLab and Jira operations require the c
 
 | Skill | Invocation | Description |
 |-------|-----------|-------------|
+| [`engineering-mode`](skills/engineering/engineering-mode/) | model | Route scoped engineering work through focused implementation and behavior verification |
 | [`git-flow`](skills/git/git-flow/) | model | Git workflow reference — branch naming, commit format, MR targets, tags |
 | [`git-cherry-pick`](skills/git/git-cherry-pick/) | model | Safely apply focused commits from one branch or ref onto another |
 | [`glab-mr`](skills/git/glab-mr/) | user | Prepare or publish a scoped GitLab MR; reuse an existing matching MR |
@@ -38,10 +41,20 @@ Each skill ships with its own workflow. GitLab and Jira operations require the c
 
 ### Invocation types
 
-- **model** — the agent fires the skill autonomously when the trigger matches; no need to type anything.
-- **user** — invoke explicitly with `/<skill-name>`; the agent will not fire it on its own. This keeps context lean for specialised workflows.
+- **model** — the agent can select the skill for a matching task after installation and discovery. Automatic selection depends on the client and its settings; you can also name the skill explicitly.
+- **user** — explicitly name the skill, or use `/<skill-name>` in clients supporting slash commands. The skill metadata requests explicit invocation; enforcement depends on client support.
 
 ## Usage
+
+### Engineering mode
+
+Use [`engineering-mode`](skills/engineering/engineering-mode/SKILL.md) for implementation, bug diagnosis, refactoring, performance investigation, or UI verification. Once installed and discovered by your client, name the skill with the requested outcome. Clients that support slash commands can use `/engineering-mode`; in Codex, use `$engineering-mode` or explicitly ask to use the skill.
+
+```text
+Use $engineering-mode to add search based on Jira PROJ-1234.
+```
+
+The skill selects a workflow and reports verification evidence and limitations. Specify push, PR/MR creation, merge, or deployment when those actions are part of your request; naming the skill alone does not authorize publication. Read the [detailed Engineering Mode guide](skills/engineering/engineering-mode/README.md) for its design, task examples, local usage before installation, and verification limits.
 
 ### User-invoked skills
 
@@ -49,7 +62,7 @@ Explicitly invoke `/<skill-name>` (or name the skill in a supported client). Nat
 
 | What you type | What happens |
 |---|---|
-| `/glab-mr` or "สร้าง MR" | Verifies scope and repository conventions, then commits/pushes and creates or updates an MR when requested |
+| `/glab-mr` or "Use glab-mr to create an MR" | Verifies scope and repository conventions, then commits/pushes and creates or updates an MR when requested |
 | `/glab-mr-review` or paste an MR URL/IID | Reviews the MR diff; publishes summary and inline comments only with authorization |
 | `/jira-bug PROJ-123` or "Create a bug CR for PROJ-123" | Compares the selected Git scope with the bug, drafts a summary, and posts when requested |
 | `/jira-cr PROJ-123` or "Create a CR for PROJ-123" | Maps ticket AC to the selected Git scope and verification evidence; posts when requested |
@@ -57,10 +70,11 @@ Explicitly invoke `/<skill-name>` (or name the skill in a supported client). Nat
 
 ### Model-invoked skills
 
-These fire automatically when the agent detects the trigger — just work normally and it'll apply them:
+After installation and discovery, the agent can select these skills for matching requests. Automatic selection depends on the client and its settings; explicitly name a skill when you want to request its use.
 
-| Skill | Fires when you… |
+| Skill | Relevant when you… |
 |---|---|
+| `engineering-mode` | Implement, diagnose, refactor, or verify a change across multiple steps; also invoke explicitly with `/engineering-mode` |
 | `git-flow` | Create a branch, write a commit, tag a release, or ask where to merge |
 | `git-cherry-pick` | Ask to cherry-pick, backport, or move selected ticket commits between branches |
 | `react-hook-form-zod` | Build a form, add validation, or hit a resolver/uncontrolled-field error |
@@ -70,7 +84,7 @@ These fire automatically when the agent detects the trigger — just work normal
 Example — just ask naturally:
 
 ```
-"ช่วย branch ใหม่สำหรับ PROJ-456 เรื่อง login throttling หน่อย"
+"Create a new branch for PROJ-456 to implement login throttling."
 → git-flow checks repository conventions and verified refs before selecting the branch and base
 ```
 
@@ -83,6 +97,8 @@ Example — just ask naturally:
 
 ```
 skills/
+├── engineering/             # Engineering execution and verification
+│   └── engineering-mode/    # task workflows and evidence-based delivery
 ├── git/                     # Git & GitLab workflow
 │   ├── git-flow/            # branch naming, commit format, MR targets, tags
 │   ├── git-cherry-pick/      # focused commit transfer between branches
@@ -100,14 +116,6 @@ skills/
 
 Each skill lives in its own directory with a `SKILL.md` file. Branch-specific guidance belongs in linked `references/` files; executable starting points belong in `templates/`. Keep required resources inside the skill so individual installation works.
 
-## Installation
-
-Install this skill collection using the `npx skills` command:
-
-```bash
-npx skills add https://github.com/Sh0ckWaveZero/ai-agent-skills.git
-```
-
 ## Merge request descriptions
 
 `glab-mr` follows the repository template and the [MR description guide](skills/git/glab-mr/references/mr-description.md): explain the problem, final behavior, approach, and actual verification; add review focus, visuals/API examples, or deployment details when useful. Keep small MRs concise and preserve human context when updating.
@@ -122,7 +130,7 @@ Run `python3 tests/validate_skills.py` for structural checks and use the [workfl
 
 ## Creating a New Skill
 
-Add a directory under `skills/` with a `SKILL.md` file:
+Add `skills/<category>/<skill-name>/SKILL.md`, for example `skills/engineering/my-skill/SKILL.md`. The repository validator discovers skills at this two-level directory depth:
 
 ```markdown
 ---
@@ -150,3 +158,5 @@ User-invoked: `/my-skill` — or describe when the user would invoke it.
 | `name` | Skill identifier (matches the directory name) |
 | `description` | Front-load the leading word; for model-invoked skills, include trigger phrasing ("Use when…") |
 | `disable-model-invocation` | Omit for model-invoked; set `true` for user-invoked-only skills |
+
+Add the new skill to the inventories in both `README.md` and `README.th.md`, then run the checks in [Validation](#validation).

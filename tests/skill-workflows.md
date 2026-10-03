@@ -4,6 +4,12 @@ For each scenario, read the named skills and check that their instructions produ
 
 | Scenario | Skills | Expected behavior |
 |---|---|---|
+| User invokes engineering-mode for a plan only | engineering-mode | Return the plan; do not implement or publish. |
+| Feature is implemented and type checks pass, but browser is unavailable | engineering-mode | Report type compatibility as passed and UI behavior as unverified. |
+| User requests a fix without publication | engineering-mode | Complete local implementation and verification; no automatic push, PR/MR, or merge. |
+| Specialized skills or delegation tools are unavailable | engineering-mode | Continue with supported tools and repository instructions; no mandatory panel or model switch. |
+| Repeated patches fail the same check | engineering-mode | Revisit the diagnosis and shared assumption using failure evidence. |
+| GitLab publication was authorized and the write times out | engineering-mode, glab-mr | Read the remote state before retrying; verify any created request. |
 | User names `release/2.x` as target; repo also has `develop` | git-flow, glab-mr | Preserve the explicit target and fetch/verify it; no default replacement. |
 | Repository is GitHub and has only `main` | git-flow, glab-mr | Recognize GitHub and use its workflow; no GitLab command or invented `develop`. |
 | Unrelated files were staged before the request | glab-mr | Preserve that index/worktree content and isolate the requested commit. |

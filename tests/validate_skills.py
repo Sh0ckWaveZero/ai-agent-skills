@@ -31,7 +31,8 @@ for skill in skills:
             if not resolved.exists() or not resolved.is_relative_to(skill.parent.resolve()):
                 errors.append(f"{skill}: missing or nonportable resource {target}")
 
-for document in [ROOT / "README.md", *ROOT.glob("skills/**/*.md"), *ROOT.glob("tests/*.md")]:
+readmes = [ROOT / "README.md", ROOT / "README.th.md"]
+for document in [*readmes, *ROOT.glob("skills/**/*.md"), *ROOT.glob("tests/*.md")]:
     text = document.read_text()
     if sum(line.lstrip().startswith("```") for line in text.splitlines()) % 2:
         errors.append(f"{document}: unbalanced code fences")
@@ -40,10 +41,11 @@ for document in [ROOT / "README.md", *ROOT.glob("skills/**/*.md"), *ROOT.glob("t
             if not (document.parent / target.split("#")[0]).exists():
                 errors.append(f"{document}: missing link {target}")
 
-readme = (ROOT / "README.md").read_text()
-for skill in skills:
-    if f"[{chr(96)}{skill.parent.name}{chr(96)}]" not in readme:
-        errors.append(f"README missing {skill.parent.name}")
+for readme_path in readmes:
+    readme = readme_path.read_text()
+    for skill in skills:
+        if f"[{chr(96)}{skill.parent.name}{chr(96)}]" not in readme:
+            errors.append(f"{readme_path.name} missing {skill.parent.name}")
 if errors:
     raise SystemExit("\n".join(errors))
 print(f"PASS: {len(skills)} skills; metadata, fences, local resources, README inventory")
