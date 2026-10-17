@@ -1,7 +1,9 @@
 ---
 name: glab-mr-review
-description: Review a GitLab merge request, produce an evidence-based draft, and publish summary and inline comments when requested.
-disable-model-invocation: true
+description: >-
+  Use when asked to review a GitLab merge request: gathers the MR with glab,
+  reads linked Jira tickets, maps impact with Code-review-graph when available,
+  and produces an evidence-based draft (posting comments only when asked).
 ---
 
 # GitLab MR Review
@@ -17,6 +19,14 @@ Verify GitLab host, project, source/target branches, and MR identity from the UR
 Read MR metadata, the full diff, all commits, existing notes/discussions with pagination, and CI status. Record the current diff version's base/start/head SHAs. Fetch both relevant refs, including fork source refs when needed; compare immutable SHAs matching that diff version. If a diff is truncated or a file cannot be retrieved, obtain it separately or report incomplete coverage.
 
 Completion: scope, snapshot, existing feedback, and unavailable evidence are recorded.
+
+## 1a. Read the linked Jira ticket(s)
+
+Find ticket keys (e.g. `ABC-123`) in the source branch name, MR title, description, and commit messages. For each, use the available Atlassian issue-read operation for the summary, description, acceptance criteria, and linked issues. Use the issue-comments operation separately to read recent comments. Summarize the intended behavior and use it as the contract when judging the diff: flag requirements the MR misses, behavior it adds beyond the ticket, and acceptance criteria with no test. If no ticket is found, a connector is unavailable, or access fails, record the limitation in coverage notes rather than guessing.
+
+## 1b. Map impact with Code-review-graph
+
+With the repo checked out at the reviewed head SHA (a temporary clone, not the user's worktree), use the Code-review-graph connector if it is available and inspect its supported operations before using it. Use its change, impact, flow, caller, and test context to choose what surrounding code to read in step 2. If the connector is unavailable, inspect changed symbols, callers, flows, and relevant tests with repository search and code navigation, then record that graph coverage was unavailable. Treat graph output as leads. Confirm each finding against the actual code.
 
 ## 2. Investigate findings
 
@@ -34,7 +44,7 @@ Completion: every reported finding has supporting evidence; coverage and actual 
 
 Before formatting, perform the lead-review judgment pass in the [review standard](references/review-standard.md#lead-review-judgment). Validate every candidate against the current snapshot, deduplicate by root cause, and decide whether to require a fix, suggest an improvement, request evidence, or dismiss it. This pass applies to a single reviewer as well as any authorized independent reviews; reviewer agreement is not proof. Do not publish rejected candidates or create a second severity/verdict scale.
 
-Use the [comment and summary format](references/comment-format.md), including its emoji conventions. Use plain text instead when the user or repository prefers it. Keep summary metadata in separate bullets and each finding/question in its own bullet; use familiar words in the user's language. Return the MR link, source/target, reviewed head SHA, verdict, coverage, findings with file/line evidence, tests run, and limitations. Put suggested tests separately from executed tests and unverified behavior. If publication was not requested, stop with this complete draft.
+Use the [comment and summary format](references/comment-format.md), including its emoji conventions. Use plain text when the user or repository prefers it. Keep summary metadata in separate bullets. Give each finding or question its own bullet. Use familiar words in the user's language. The chat report includes the MR link, source and target branches, reviewed head SHA, verdict, findings with file and line evidence, material coverage gaps, failed checks, and limitations. Do not list routine passes or requirements that were met. Keep the published summary short. State the verdict, link each finding to its inline discussion, and include failed-check or not-verified sections when needed. Keep suggested tests separate from defect reproductions and unverified behavior. If the user did not request publication, return the complete draft without posting it.
 
 For authorized publication, prepare all bodies and anchors first. Format inline issues as short Markdown sections with blank lines and evidence bullets according to the comment format; never flatten the finding into a single paragraph. Use a general summary for findings that cannot be accurately anchored; do not attach them to an unrelated nearby changed line.
 
@@ -50,7 +60,7 @@ Prefer supported installed `glab` commands. If inline options are unavailable, u
 
 Pass multiline text through structured tool/API arguments or a literal temporary body file using supported file-input options. Create that file in the session's temporary directory, not in the user's worktree, and remove it after use. Keep arbitrary comment text out of shell interpolation.
 
-Post the summary, then inline findings sequentially, recording returned IDs. Verify each result's body and position. On invalid-position errors, recheck diff version, paths, and line mapping; the error alone does not establish that a line is unchanged. On a timeout or uncertain write, read discussions before retrying to avoid duplicates.
+Post inline findings first, one at a time, and record their IDs. Then post or update the summary. Link each anchored finding to its inline discussion. Include full detail only for findings without a suitable line anchor. Verify the body and position of every post. If GitLab rejects a position, recheck the diff version, paths, and line mapping. A rejection does not prove that the line is unchanged. If a write times out or its result is unclear, read the discussions before retrying to avoid duplicates.
 
 Completion: every intended post is verified or individually reported as failed/pending. Preserve existing human comments; do not delete a mistaken note without authorization.
 
@@ -69,3 +79,13 @@ Completion: prior findings are accounted for, new changes are covered or limitat
 ## Maintaining this skill
 
 Use the [review calibration cases](references/review-cases.md) after changing the standard or comment rules. They include expected defects and valid implementations that should not produce findings. Static document checks do not measure reviewer accuracy; evaluate actual review outputs against these cases when testing agent behavior.
+
+## Mandatory style checks (every review)
+- **Added em/en dashes:** scan lines added by the MR for `—` and `–` when repository or user requirements prohibit them. Report violations in one inline comment per file labeled "ต้องแก้", with line numbers. On re-review, reply under the existing discussion instead of opening a new one.
+- **Review comments:** use `-` in place of `—` or `–` unless repository or user requirements call for another style.
+
+## Keep review output focused on problems and gaps
+- In the summary comment, inline comments, and chat report, include actionable defects, unresolved requirement questions, useful non-blocking suggestions, failed checks, and material verification gaps.
+- Do not list routine passes or requirements already met, such as passing checks, test counts, satisfied coverage gates, absence of hard-coded values, or acceptance criteria that were met. Keep the full coverage record in working notes.
+- The `ทดสอบแล้ว` section lists only failed or blocked checks and is omitted when there are none. A reproduction that demonstrates a defect may be included as finding evidence, not described as a passing check.
+- Keep the verdict, linked findings/questions/suggestions, one-line statuses for prior findings in a re-review, and material items under `ยังไม่ได้ตรวจยืนยัน`.

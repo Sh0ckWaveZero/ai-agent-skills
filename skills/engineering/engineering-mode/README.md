@@ -110,7 +110,7 @@ This example illustrates the process; it is not a recorded test of the skill.
 
 ## Tools and optional integrations
 
-The skill uses available tools rather than requiring a fixed connector namespace. It can use installed `git-flow` or `react-hook-form-zod` for their specific operations. `jira-plan`, `glab-mr`, and `glab-mr-review` set `disable-model-invocation`, so the skill suggests the one that fits to the user instead of invoking it. When the user explicitly invokes or names one of these skills in the request together with `engineering-mode`, the agent reads and follows both. If a relevant specialized skill is not installed, the agent follows repository instructions directly. The verified remote host determines GitHub or GitLab tooling.
+The skill uses available tools rather than requiring a fixed connector namespace. It can use installed `git-flow` or `react-hook-form-zod` for their specific operations, and it can use `glab-mr-review` when the request is to review a GitLab MR. `jira-plan` and `glab-mr` are user-invoked skills. The agent reads and follows either when the user invokes or names it together with `engineering-mode`. Review authorization permits analysis and a draft. Publishing comments still requires the user's request. If a relevant specialized skill is not installed, the agent follows repository instructions directly. The verified remote host determines GitHub or GitLab tooling.
 
 It uses the current model and requires no model panel. Delegation depends on authorization and available tools. It creates no background automation or permanent cross-task mode by itself.
 
