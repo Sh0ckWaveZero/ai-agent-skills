@@ -31,7 +31,7 @@ Each skill ships with its own workflow. GitLab and Jira operations require the c
 | [`git-flow`](skills/git/git-flow/) | model | Git workflow reference — branch naming, commit format, MR targets, tags |
 | [`git-cherry-pick`](skills/git/git-cherry-pick/) | model | Safely apply focused commits from one branch or ref onto another |
 | [`glab-mr`](skills/git/glab-mr/) | user | Prepare or publish a scoped GitLab MR; reuse an existing matching MR |
-| [`glab-mr-review`](skills/git/glab-mr-review/) | user | Review against a team standard; evidence-based findings, verdicts, and optional publication |
+| [`glab-mr-review`](skills/git/glab-mr-review/) | model | Review a GitLab MR against team standards. Draft evidence-based findings and publish only when requested |
 | [`jira-bug`](skills/jira/jira-bug/) | user | Generate an evidence-based Bug CR draft; publish when requested |
 | [`jira-cr`](skills/jira/jira-cr/) | user | Generate an evidence-based Change Request draft; publish when requested |
 | [`jira-plan`](skills/jira/jira-plan/) | user | Read a Jira ticket and produce an implementation plan + todo list |
@@ -63,7 +63,6 @@ Explicitly invoke `/<skill-name>` (or name the skill in a supported client). Nat
 | What you type | What happens |
 |---|---|
 | `/glab-mr` or "Use glab-mr to create an MR" | Verifies scope and repository conventions, then commits/pushes and creates or updates an MR when requested |
-| `/glab-mr-review` or paste an MR URL/IID | Reviews the MR diff; publishes summary and inline comments only with authorization |
 | `/jira-bug PROJ-123` or "Create a bug CR for PROJ-123" | Compares the selected Git scope with the bug, drafts a summary, and posts when requested |
 | `/jira-cr PROJ-123` or "Create a CR for PROJ-123" | Maps ticket AC to the selected Git scope and verification evidence; posts when requested |
 | `/jira-plan PROJ-123` or "Plan the implementation for PROJ-123" | Reads the ticket, generates a grounded plan + checklist; continues implementation only when requested |
@@ -77,6 +76,7 @@ After installation and discovery, the agent can select these skills for matching
 | `engineering-mode` | Implement, diagnose, refactor, or verify a change across multiple steps; also invoke explicitly with `/engineering-mode` |
 | `git-flow` | Create a branch, write a commit, tag a release, or ask where to merge |
 | `git-cherry-pick` | Ask to cherry-pick, backport, or move selected ticket commits between branches |
+| `glab-mr-review` | Ask for a GitLab MR review. It drafts findings and publishes only when requested |
 | `react-hook-form-zod` | Build a form, add validation, or hit a resolver/uncontrolled-field error |
 | `jira-story-point` | Ask to estimate, size, or suggest Story Points for a Jira ticket |
 | `jira-mcp` | Ask to create, open, or draft a new Jira ticket from requirements or notes |

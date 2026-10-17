@@ -54,7 +54,7 @@ Expected: one root-cause authorization finding including the missing regression 
 
 Input: F1 reported missing ownership. New commits restore the owner predicate, and its focused test passes, but another new commit removes a required field from the response while an inspected consumer still uses it.
 
-Expected: `✅ fixed — F1` with the named test/current SHA and a separate new blocking compatibility finding. Verdict remains `Changes required`; do not conclude the MR is ready just because F1 is fixed.
+Expected: `✅ fixed F1` with current source evidence and SHA, plus a separate new blocking compatibility finding. Do not report the passing test. Verdict remains `Changes required`. Do not conclude the MR is ready just because F1 is fixed.
 
 ## J. Pending CI and emoji semantics
 
@@ -66,13 +66,13 @@ Expected: plain `No blocking findings`, CI pending, tests not run. No ✅ overal
 
 Input: A verified finding describes an external API succeeding before a local conditional write fails. Retry is rejected by the API as already executed, leaving local status stale. A concurrent cancellation can also make the local write fail. A temporary mock reproduced API success, local write failure, and rejected retry. Failure/retry and concurrent cancellation regression tests are proposed, not executed. Prepare one High severity blocking inline issue, F3, for publication.
 
-Expected: one root-cause finding with a short bold heading that starts with 🚫 and `issue (blocking)`, and a separate severity paragraph. No other emoji appears in the body. Explain the trigger and stale-status impact briefly. Separate Evidence, Suggested change, and Verification with bold labels and real blank lines; use evidence bullets and backticks for code identifiers. Distinguish the executed mock from proposed regressions. Do not claim a database transaction can undo an external HTTP side effect. Do not wrap the published body in a code fence, emit literal newline escapes, or flatten all fields into one paragraph.
+Expected: one root-cause finding with a short bold heading that starts with 🚫 and `issue (blocking)`. Put severity in a separate paragraph. Use no other emoji in the body. Explain the trigger and stale-status impact briefly. State why the requested change matters and what result it should produce. Do not require one implementation when alternatives are valid. Separate Evidence, Suggested change, and Verification with bold labels and blank lines. Use evidence bullets and backticks for code identifiers. Distinguish the executed mock from proposed regressions. Do not claim a database transaction can undo an external HTTP side effect. Do not wrap the published body in a code fence, emit literal newline escapes, or flatten all fields into one paragraph.
 
 ## L. Readable Thai summary
 
 Input: Prepare a Thai summary with F1 High (save can overwrite concurrent history and does not enforce AVAILABLE at write time), F2 Medium (edit navigation loses Thai locale), F3 Medium (browser Back/Forward bypasses the unsaved-changes prompt, established by code tracing but not reproduced in a browser), and Q1 (subgroup is mandatory in the requirements table but optional in the screenshot). No repository-rule violation is confirmed. Type checks and focused tests passed; a mocked write reproduced F1, and a Bun check reproduced F2 after the Vitest attempt failed on module resolution. Live concurrent database writes were not tested. Include branch names, SHA, and ticket link.
 
-Expected: Thai headings and plain descriptions; only the verdict line carries a status emoji matching the verdict, while section headings and finding/question bullets carry none; metadata in separate bullets; one finding/question per bullet with stable IDs and severity. Distinguish repository rules from requirements without duplicating F1 as a new finding. Keep Q1 a question. Checks start with short results and preserve mock/live distinctions and the failed Vitest attempt. Separate unverified behavior from proposed tests; do not claim browser verification of F3. Do not combine findings or limitations into dense paragraphs or use unexplained English labels such as snapshot/probe/regression.
+Expected: use Thai headings and plain descriptions. Put the verdict emoji on the verdict line. Do not decorate section headings or finding and question bullets. Put metadata in separate bullets. Give each finding or question its own bullet with a stable ID and severity. Distinguish repository rules from requirements without duplicating F1 as a new finding. Use `ปัญหาที่พบ` for F1-F3 and `คำถาม` for Q1. Introduce each ID by role, such as `ปัญหาที่ 1 (F1)` and `คำถามที่ 1 (Q1)`, so readers do not need to infer what the letters mean. Expand unfamiliar abbreviations on first use. Keep Q1 as a question. Start each check result with the outcome and preserve the distinction between mock and live checks. Include the failed Vitest attempt. Separate unverified behavior from proposed tests. Do not claim browser verification of F3. Avoid dense paragraphs and unexplained English labels such as snapshot, probe, or regression.
 
 ## M. Inline prose and check results without semicolons
 
@@ -108,7 +108,7 @@ Expected: no emoji anywhere in the draft. Keep the type and status tokens (`issu
 
 Input: A re-review covers three prior findings. F1 was blocking and its fix is verified by a named test. F2 was blocking and the defect is still present at the current SHA. F3 was reported fixed in the MR discussion, but no evidence is available to confirm it. No new defects are found.
 
-Expected: `✅ fixed — F1` with the named test and current SHA. F2 is `still present` and keeps its blocking label with 🚫. F3 is `needs evidence` with 🔎 and states the check that would resolve it. Each entry carries one emoji and none appears elsewhere in its body. The verdict is `Changes required` for the current SHA, and F1 is not reposted.
+Expected: `✅ fixed F1` with current source evidence and SHA. Do not report the passing test. F2 is `still present` and keeps its blocking label with 🚫. F3 is `needs evidence` with 🔎 and states the check that would resolve it. Each entry carries one emoji and none appears elsewhere in its body. The verdict is `Changes required` for the current SHA, and F1 is not reposted.
 
 ## Evaluation record
 
