@@ -24,7 +24,7 @@ Reproduce the visible state using the relevant viewport, data, and interactions.
 
 ## Review
 
-Resolve the exact diff and relevant requirements, separate defects from questions, and attach findings to evidence. A review request permits analysis and a draft. Publish comments only when the user asks. Re-read the current head and anchors before posting authorized comments. For a GitLab MR, read and follow `glab-mr-review` when its description matches the request. If the skill is unavailable or does not match, review directly using repository instructions.
+Resolve the exact diff and relevant requirements, separate defects from questions, and attach findings to evidence. Review authorization permits analysis; publication follows the user's request. Re-read the current head and anchors before posting authorized comments. For a GitLab MR, read and follow the model-invocable `glab-mr-review` skill when its description matches the review request. If it is unavailable or does not match, review directly using repository instructions. Do not publish comments unless the user requested publication.
 
 ## Delivery and resume
 
