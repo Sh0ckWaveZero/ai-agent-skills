@@ -43,6 +43,9 @@ For each scenario, read the named skills and check that their instructions produ
 | Jira tools use a different namespace and no task tool exists | jira-plan | Discover capabilities and return a Markdown checklist. |
 | User requests plan and implementation together | jira-plan | Present the grounded plan and continue authorized implementation without redundant approval. |
 | Bug description suggests a cause without reproduction | jira-plan | Label it a hypothesis and plan a falsifying check. |
+| Feature ticket changes a user-facing screen | jira-plan, design-system-ai-agent | Inspect project UI evidence, use the optional UI section for relevant components, tokens, and states, and mark missing evidence as a gap or provisional choice. |
+| Bug ticket changes a user-facing interaction | jira-plan, design-system-ai-agent | Apply the same evidence-based UI analysis to the bug plan and include the optional UI section only when relevant. |
+| Ticket is backend-only and does not affect user-facing UI | jira-plan | Skip Design System analysis and omit the optional UI section. |
 | Team calibration conflicts with fallback duration bands | jira-story-point | Use verified team guidance and explain the conflict; fallback does not override it. |
 | No comparable completed issues are accessible | jira-story-point | Use labeled fallback calibration with Low confidence. |
 | User requests estimate only | jira-story-point | No Jira write. |

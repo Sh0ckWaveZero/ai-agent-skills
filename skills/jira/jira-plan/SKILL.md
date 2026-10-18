@@ -35,6 +35,13 @@ User-invoked: `/jira-plan` — or when asked to plan or prepare an implementatio
 
 Inspect repository instructions and relevant implementations, callers, schemas, and tests before finalizing the plan. Record concrete paths and evidence. If repository access is unavailable, label proposed files and technical choices as provisional.
 
+After tracing the affected code, decide whether the ticket changes or constrains a user-facing screen, interaction, or UI state. This applies to bugs as well as feature work. For a UI-affecting ticket:
+- Read the `design-system-ai-agent` skill when it is installed. Regardless of skill availability, inspect the repository's actual UI implementation and documentation, then record the paths that support the plan.
+- Use existing components, variants, tokens, and patterns only when project evidence supports them.
+- Do not assume that a design document, design tool, or external integration exists. If relevant project evidence is missing, state the gap and mark any proposed UI choice as provisional.
+
+For a ticket that does not affect user-facing UI, skip this UI analysis and omit the optional UI section from the plan.
+
 Based on the **Issue Type**, switch to the appropriate analysis mode:
 
 #### For Feature / Story / Task tickets:
@@ -85,6 +92,7 @@ Format the plan using the appropriate template below.
 ### Definition of Done
 - [ ] All ACs are implemented and verified
 - [ ] Relevant tests and repository-required checks pass, with evidence recorded
+- [ ] If UI is affected, follow evidenced project components and tokens where available, and record any missing pattern or justified exception
 - [ ] Code reviewed and approved
 - [ ] No regression in related features
 ```
@@ -121,8 +129,21 @@ Format the plan using the appropriate template below.
 ### Definition of Done
 - [ ] Bug is reproduced and root cause confirmed
 - [ ] Fix is implemented and tested
+- [ ] If UI is affected, follow evidenced project components and tokens where available, and record any missing pattern or justified exception
 - [ ] No new issues introduced
 - [ ] Bug verified as resolved in dev/staging
+```
+
+#### Optional UI and Design System section
+
+Include this section in either plan template only when the ticket affects user-facing UI. Keep each item relevant to the ticket and grounded in repository evidence.
+
+```markdown
+### UI and Design System
+- **Affected screen or flow:** [User-visible change and evidence path]
+- **Existing components and tokens:** [Relevant components, variants, token sources, and evidence paths, or the gap if none are available]
+- **States and interaction requirements:** [Relevant loading, empty, error, success, disabled, accessibility, or interaction requirements]
+- **Open gaps or exceptions:** [Unresolved questions, provisional choices, or why an existing pattern cannot be used]
 ```
 
 ### Step 4: Create Todo List
