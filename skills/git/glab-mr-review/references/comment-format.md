@@ -76,7 +76,7 @@ Every comment that asks for a change must state what happens now, why it matters
 
 Inline issues must use rendered Markdown sections with real blank lines between the title, severity, impact, evidence, suggested change, and verification. A single newline can render as a space in GitLab; do not rely on it to separate sections or concatenate labeled fields into one paragraph. Publish the Markdown body itself, without an enclosing code fence or literal `\n` sequences.
 
-Keep the title short and severity on its own paragraph. Use short paragraphs (usually one to three sentences) and bullets for multiple evidence points or scenarios. Format code identifiers, statuses, and paths with backticks. Link precise evidence when available. Keep defect reproductions, proposed checks, and unverified behavior separate. Do not list passing checks in review comments. Do not invent checks to fill the template. Omit an empty optional bullet. Long logs and broader review coverage belong in working notes or a linked artifact, while the inline comment retains enough evidence to stand alone.
+Keep the title short and severity on its own paragraph. Use short paragraphs (usually one to three sentences) and bullets for multiple evidence points or scenarios. Format code identifiers, statuses, and paths with backticks; link precise evidence when available. Keep defect reproductions, proposed checks, and unverified behavior separate. Do not list passing checks in review comments. Do not invent checks to fill the template. Omit an empty optional bullet. Long logs and broader review coverage belong in working notes or a linked artifact, while the inline comment retains enough evidence to stand alone.
 
 A brief suggestion, question, or fixed-status reply can use a heading and a short paragraph without every section. Do not collapse a multi-part defect into a single paragraph. Assign stable local IDs such as F1/F2 and retain them during re-review. Link existing discussion IDs after publication. Choose severity from impact, not alarming wording. Do not quote secrets or private data in examples.
 
@@ -114,7 +114,7 @@ Post inline discussions first, then the summary, so the summary can link each an
 
 ### <Questions>
 
-- Q1: <one line> ([discussion](<link>))
+- Q1: <one line> (add the discussion link when anchored)
 - Q2: <unanchored question: the full question in one line>
 
 ### <Previously reported findings>
@@ -148,11 +148,11 @@ Rules:
 - Keep findings based on repository rules separate from findings based on ticket requirements. Do not merge them because they share a symptom.
 - During a re-review, list each prior finding's status on one line with the current evidence. Omit this section for a first review.
 
-The summary must follow the same Markdown spacing rules as inline comments. Use one finding or question per bullet. Do not join F1/F2/F3/Q1 in a paragraph with semicolons. If one finding concerns both code and requirements, list its impact once and reference the same ID in the other section. Preserve the distinction between repository rules and ticket requirements.
+The summary must follow the same Markdown spacing rules as inline comments. Use one finding or question per bullet; never join F1/F2/F3/Q1 in a paragraph with semicolons. If one finding concerns both code and requirements, list its impact once and reference the same ID in the other section. Preserve the distinction between repository rules and ticket requirements.
 
 Use everyday language for the verdict, headings, and explanations. For Thai summaries use `ต้องแก้ไขก่อน`, `ยังตรวจไม่ครบ`, or `ไม่พบปัญหาที่ต้องแก้ก่อน` for the corresponding verdict, and the headings `ต้องแก้`, `คำถาม`, `ข้อเสนอแนะ`, `ทดสอบแล้ว`, and `ยังไม่ได้ตรวจยืนยัน` from the summary template. Avoid unexplained terms such as snapshot, blocker, probe, persistence, navigation, and regression. Say what was tested and what happened, for example: “กดกลับแล้วออกจากฟอร์มได้โดยไม่เตือนว่ามีข้อมูลยังไม่บันทึก”. Keep exact UI labels and code names when needed, explaining their role in plain language.
 
-Start each failed-check report with a short result. Move long commands, logs, and test setup to working notes or a linked artifact when needed. Retain material limits. A mocked database write is not a live database test, and a code trace is not a browser reproduction. Keep unverified behavior and proposed tests in separate sections. Omit empty optional sections. State that no tests ran or evidence was unavailable only when that gap materially limits the review.
+Keep each reported failed check to a short result first; move long commands, logs, and test setup to working notes or a linked artifact when needed. Retain material limits: a mocked database write is not a live database test, and a code trace is not a browser reproduction. Keep unverified behavior and proposed tests in separate sections. Omit empty optional sections. State that no tests ran or evidence was unavailable only when that gap materially limits the review.
 
 Do not turn `No blocking findings` into unconditional approval language. Use ✅ only to mark a prior finding fixed when current evidence supports that status. Do not use it for passing checks or the overall review verdict. A review recommendation and an actual GitLab approval are separate actions.
 

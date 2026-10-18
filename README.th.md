@@ -29,7 +29,7 @@
 | [`git-flow`](skills/git/git-flow/) | model | ตรวจแนวทางตั้งชื่อ branch รูปแบบ commit เป้าหมาย MR และ tag |
 | [`git-cherry-pick`](skills/git/git-cherry-pick/) | model | ย้าย commit ที่เลือกไปอีก branch โดยรักษาขอบเขตงาน |
 | [`glab-mr`](skills/git/glab-mr/) | user | เตรียม สร้าง หรืออัปเดต GitLab MR และใช้ MR เดิมเมื่อเป็นงานเดียวกัน |
-| [`glab-mr-review`](skills/git/glab-mr-review/) | model | ใช้เมื่อขอรีวิว GitLab MR ร่างประเด็นที่พบจากหลักฐาน และเผยแพร่เมื่อได้รับคำสั่ง |
+| [`glab-mr-review`](skills/git/glab-mr-review/) | model | รีวิว GitLab MR ตามมาตรฐานทีม ร่างประเด็นที่พบจากหลักฐาน และเผยแพร่เมื่อได้รับคำสั่ง |
 | [`jira-bug`](skills/jira/jira-bug/) | user | ร่างสรุป Bug CR จากหลักฐาน และโพสต์เมื่อได้รับคำสั่ง |
 | [`jira-cr`](skills/jira/jira-cr/) | user | ร่างสรุป Change Request จากหลักฐาน และโพสต์เมื่อได้รับคำสั่ง |
 | [`jira-plan`](skills/jira/jira-plan/) | user | อ่าน Jira ticket แล้วจัดทำแผนพัฒนาและรายการงาน |
@@ -96,10 +96,10 @@
 
 | สกิล | ใช้เมื่อ |
 |---|---|
-| `engineering-mode` | ใช้เมื่อพัฒนา วิเคราะห์บั๊ก refactor หรือตรวจงานหลายขั้นตอน และเรียกใช้โดยตรงได้เช่นกัน |
+| `engineering-mode` | พัฒนา วิเคราะห์บั๊ก refactor หรือตรวจงานที่มีหลายขั้นตอน และเรียกโดยตรงได้เช่นกัน |
 | `git-flow` | สร้าง branch เขียน commit ทำ release tag หรือเลือก branch เป้าหมาย |
 | `git-cherry-pick` | cherry-pick ทำ backport หรือย้าย commit ของงานที่เลือกระหว่าง branch |
-| `glab-mr-review` | ขอให้รีวิว GitLab MR สกิลจะร่างประเด็นที่พบและเผยแพร่เมื่อได้รับคำสั่งเท่านั้น |
+| `glab-mr-review` | ขอให้รีวิว GitLab MR โดยร่างประเด็นที่พบและเผยแพร่เมื่อได้รับคำสั่งเท่านั้น |
 | `design-system-ai-agent` | สร้าง ปรับ หรือรีวิว UI ให้ตรงกับ Design System ที่โปรเจกต์ใช้อยู่ |
 | `react-hook-form-zod` | สร้างฟอร์ม เพิ่ม validation หรือแก้ปัญหา resolver และสถานะ field |
 | `jira-story-point` | ประเมินขนาดงานหรือแนะนำ Story Points ของ Jira ticket |
@@ -159,7 +159,7 @@ npx skills add https://github.com/Sh0ckWaveZero/ai-agent-skills.git
 
 ก่อนรายงาน ผู้รีวิวหลักตรวจหลักฐานของแต่ละข้อ รวมข้อที่มีต้นเหตุเดียวกัน แล้วตัดสินว่าต้องแก้ เป็นข้อเสนอแนะ ต้องหาหลักฐานเพิ่ม หรือปัดตก ขั้นตอนนี้ใช้กับผู้รีวิวคนเดียวได้ ไม่ต้องมีหลายโมเดล และจำนวนผู้รีวิวที่เห็นตรงกันไม่ใช้แทนหลักฐาน
 
-`glab-mr-review` มี [มาตรฐานรีวิว](skills/git/glab-mr-review/references/review-standard.md), [รูปแบบคอมเมนต์และความหมายของ emoji](skills/git/glab-mr-review/references/comment-format.md) และ [กรณีตัวอย่างสำหรับเทียบผลรีวิว](skills/git/glab-mr-review/references/review-cases.md) เอกสารแยกระดับความรุนแรง สถานะที่ขวางการผ่านรีวิว หลักฐาน และข้อสรุป การรีวิวซ้ำจะติดตามประเด็นเดิมและตรวจการเปลี่ยนแปลงใหม่ หาก repo ใช้ข้อความล้วน สามารถงด emoji ได้
+`glab-mr-review` มี [มาตรฐานรีวิว](skills/git/glab-mr-review/references/review-standard.md), [รูปแบบคอมเมนต์และความหมายของ emoji](skills/git/glab-mr-review/references/comment-format.md) และ [กรณีตัวอย่างสำหรับเทียบผลรีวิว](skills/git/glab-mr-review/references/review-cases.md) โดยแยกระดับความรุนแรง สถานะที่ขวางการผ่านรีวิว หลักฐาน และข้อสรุปออกจากกัน การรีวิวซ้ำจะติดตามประเด็นเดิมและตรวจการเปลี่ยนแปลงใหม่ สามารถงด emoji ได้หาก repo ใช้ข้อความล้วน
 
 ## การตรวจสอบสกิล
 
@@ -201,6 +201,6 @@ disable-model-invocation: true
 |---|---|
 | `name` | ชื่อสกิล ต้องตรงกับชื่อโฟลเดอร์ |
 | `description` | บอกหน้าที่และเงื่อนไขที่ควรใช้ เพื่อให้ agent เลือกได้ตรงงาน |
-| `disable-model-invocation` | ตั้งเป็น `true` สำหรับสกิลที่ผู้ใช้ต้องเรียกเอง เว้นค่านี้ไว้สำหรับสกิลที่ agent เลือกใช้ได้ |
+| `disable-model-invocation` | ตั้งเป็น `true` สำหรับสกิลที่ต้องเรียกโดยผู้ใช้ และละค่านี้ไว้สำหรับสกิลที่ agent เลือกใช้ได้ |
 
 เพิ่มสกิลในตารางของ README ทั้งสองภาษา แล้วรันการตรวจสอบโครงสร้าง เอกสารแนะนำการใช้งานนี้มีสองภาษา ส่วนไฟล์คำสั่งของสกิลและเอกสารอ้างอิงยังใช้ภาษาตามไฟล์ต้นฉบับ

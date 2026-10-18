@@ -6,7 +6,7 @@ For each scenario, read the named skills and check that their instructions produ
 |---|---|---|
 | User names engineering-mode and glab-mr-review in plain language without a slash command | engineering-mode, glab-mr-review | Read both skills, including the Review reference; produce a draft unless publication was requested. |
 | User names engineering-mode and jira-plan or glab-mr for their requested operation | engineering-mode, jira-plan, glab-mr | Load the explicitly named specialized skill only; follow existing authorization for the operation. |
-| User asks engineering-mode to review a GitLab MR without naming glab-mr-review | engineering-mode, glab-mr-review | Load the matching model-invocable review skill. Draft findings and do not publish unless requested. |
+| User asks engineering-mode to review a GitLab MR without naming glab-mr-review | engineering-mode, glab-mr-review | Load the matching model-invocable review skill; draft findings and do not publish unless requested. |
 | Review candidates repeat the same root cause and an upstream guard disproves another candidate | glab-mr-review | Apply lead judgment before reporting: merge duplicates and dismiss the disproved candidate without publishing it. |
 | A required contract is unavailable and no supported blocker exists | glab-mr-review | Retain a question and report Review incomplete rather than inventing a defect. |
 | User requests plain text for a review or re-review | glab-mr-review | Omit all emoji while preserving finding type, severity, status, and verdict. |

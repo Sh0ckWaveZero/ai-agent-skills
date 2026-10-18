@@ -31,7 +31,7 @@ Each skill ships with its own workflow. GitLab and Jira operations require the c
 | [`git-flow`](skills/git/git-flow/) | model | Git workflow reference — branch naming, commit format, MR targets, tags |
 | [`git-cherry-pick`](skills/git/git-cherry-pick/) | model | Safely apply focused commits from one branch or ref onto another |
 | [`glab-mr`](skills/git/glab-mr/) | user | Prepare or publish a scoped GitLab MR; reuse an existing matching MR |
-| [`glab-mr-review`](skills/git/glab-mr-review/) | model | Review a GitLab MR against team standards. Draft evidence-based findings and publish only when requested |
+| [`glab-mr-review`](skills/git/glab-mr-review/) | model | Review a GitLab MR against team standards; draft evidence-based findings and publish only when requested |
 | [`jira-bug`](skills/jira/jira-bug/) | user | Generate an evidence-based Bug CR draft; publish when requested |
 | [`jira-cr`](skills/jira/jira-cr/) | user | Generate an evidence-based Change Request draft; publish when requested |
 | [`jira-plan`](skills/jira/jira-plan/) | user | Read a Jira ticket and produce an implementation plan + todo list |
@@ -77,7 +77,7 @@ After installation and discovery, the agent can select these skills for matching
 | `engineering-mode` | Implement, diagnose, refactor, or verify a change across multiple steps; also invoke explicitly with `/engineering-mode` |
 | `git-flow` | Create a branch, write a commit, tag a release, or ask where to merge |
 | `git-cherry-pick` | Ask to cherry-pick, backport, or move selected ticket commits between branches |
-| `glab-mr-review` | Ask for a GitLab MR review. It drafts findings and publishes only when requested |
+| `glab-mr-review` | Ask for a GitLab MR review; it drafts findings and publishes only when requested |
 | `design-system-ai-agent` | Create, change, or review UI that must follow the project's current Design System |
 | `react-hook-form-zod` | Build a form, add validation, or hit a resolver/uncontrolled-field error |
 | `jira-story-point` | Ask to estimate, size, or suggest Story Points for a Jira ticket |
