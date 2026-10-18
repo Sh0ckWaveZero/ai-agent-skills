@@ -6,7 +6,7 @@
   <img src="assets/ai-agent-skills-banner-th.png" alt="MSL AI Agent Skills — ขั้นตอนทำงานที่ใช้ได้จริง เพื่อพัฒนาซอฟต์แวร์ให้ดีขึ้น" width="100%" />
 </p>
 
-ชุดสกิลที่นำกลับมาใช้ได้สำหรับ AI agent ครอบคลุมการพัฒนาและตรวจสอบโค้ด งาน Git การสร้างและรีวิว GitLab MR การวางแผนและสรุปงาน Jira รวมถึงฟอร์ม React
+ชุดสกิลที่นำกลับมาใช้ได้สำหรับ AI agent ครอบคลุมการพัฒนาและตรวจสอบโค้ด งาน Git การสร้างและรีวิว GitLab MR การวางแผน Jira การพัฒนา UI ตาม Design System และฟอร์ม React
 
 ## เริ่มใช้งาน
 
@@ -35,6 +35,7 @@
 | [`jira-plan`](skills/jira/jira-plan/) | user | อ่าน Jira ticket แล้วจัดทำแผนพัฒนาและรายการงาน |
 | [`jira-story-point`](skills/jira/jira-story-point/) | model | ประเมิน Story Points จากข้อกำหนดและงานที่นำมาเทียบได้ |
 | [`jira-mcp`](skills/jira/jira-mcp/) | model | ร่าง สร้าง และตรวจสอบ Jira ticket ผ่าน Atlassian MCP |
+| [`design-system-ai-agent`](skills/frontend/design-system-ai-agent/) | model | สร้าง ปรับ หรือรีวิว UI โดยอิง Design System และรูปแบบปัจจุบันของโปรเจกต์ |
 | [`react-hook-form-zod`](skills/frontend/react-hook-form-zod/) | model | พัฒนาฟอร์ม React ที่ตรวจชนิดข้อมูลและ validation ด้วย React Hook Form และ Zod |
 
 ### ความหมายของวิธีเรียก
@@ -99,6 +100,7 @@
 | `git-flow` | สร้าง branch เขียน commit ทำ release tag หรือเลือก branch เป้าหมาย |
 | `git-cherry-pick` | cherry-pick ทำ backport หรือย้าย commit ของงานที่เลือกระหว่าง branch |
 | `glab-mr-review` | ขอให้รีวิว GitLab MR สกิลจะร่างประเด็นที่พบและเผยแพร่เมื่อได้รับคำสั่งเท่านั้น |
+| `design-system-ai-agent` | สร้าง ปรับ หรือรีวิว UI ให้ตรงกับ Design System ที่โปรเจกต์ใช้อยู่ |
 | `react-hook-form-zod` | สร้างฟอร์ม เพิ่ม validation หรือแก้ปัญหา resolver และสถานะ field |
 | `jira-story-point` | ประเมินขนาดงานหรือแนะนำ Story Points ของ Jira ticket |
 | `jira-mcp` | ร่างหรือสร้าง Jira ticket จากข้อกำหนดหรือบันทึกงาน |
@@ -133,7 +135,8 @@ skills/
 │   ├── jira-story-point/    # ประเมิน Story Points
 │   └── jira-mcp/            # สร้างและตรวจสอบ ticket
 └── frontend/
-    └── react-hook-form-zod/ # ฟอร์ม React และ validation
+    ├── design-system-ai-agent/ # ทำ UI ให้ตรงกับ Design System ของโปรเจกต์
+    └── react-hook-form-zod/    # ฟอร์ม React และ validation
 ```
 
 แต่ละสกิลอยู่ในโฟลเดอร์ของตัวเองและมี `SKILL.md` คำแนะนำเฉพาะกรณีอยู่ใน `references/` ที่ลิงก์จากสกิล ส่วนโค้ดตั้งต้นอยู่ใน `templates/` เก็บไฟล์ที่จำเป็นไว้ภายในสกิลเพื่อให้ติดตั้งแยกได้

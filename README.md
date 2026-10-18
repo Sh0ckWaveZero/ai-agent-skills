@@ -6,7 +6,7 @@
   <img src="assets/ai-agent-skills-banner.png" alt="AI Agent Skills — Practical workflows for better engineering" width="100%" />
 </p>
 
-A collection of reusable AI agent skills for automating developer workflows — Git workflow, GitLab MR automation, Jira CR/planning, and React form validation.
+A collection of reusable AI agent skills for developer workflows, including Git, GitLab MR automation, Jira planning, UI work that follows a project's Design System, and React forms.
 
 ## Quickstart
 
@@ -37,6 +37,7 @@ Each skill ships with its own workflow. GitLab and Jira operations require the c
 | [`jira-plan`](skills/jira/jira-plan/) | user | Read a Jira ticket and produce an implementation plan + todo list |
 | [`jira-story-point`](skills/jira/jira-story-point/) | model | Estimate Jira Story Points from ticket evidence and comparable work |
 | [`jira-mcp`](skills/jira/jira-mcp/) | model | Draft, create, and verify new Jira tickets through Atlassian MCP |
+| [`design-system-ai-agent`](skills/frontend/design-system-ai-agent/) | model | Create, modify, or review UI using a project's current Design System and verified patterns |
 | [`react-hook-form-zod`](skills/frontend/react-hook-form-zod/) | model | Type-safe React forms with React Hook Form + Zod validation |
 
 ### Invocation types
@@ -77,6 +78,7 @@ After installation and discovery, the agent can select these skills for matching
 | `git-flow` | Create a branch, write a commit, tag a release, or ask where to merge |
 | `git-cherry-pick` | Ask to cherry-pick, backport, or move selected ticket commits between branches |
 | `glab-mr-review` | Ask for a GitLab MR review. It drafts findings and publishes only when requested |
+| `design-system-ai-agent` | Create, change, or review UI that must follow the project's current Design System |
 | `react-hook-form-zod` | Build a form, add validation, or hit a resolver/uncontrolled-field error |
 | `jira-story-point` | Ask to estimate, size, or suggest Story Points for a Jira ticket |
 | `jira-mcp` | Ask to create, open, or draft a new Jira ticket from requirements or notes |
@@ -111,7 +113,8 @@ skills/
 │   ├── jira-story-point/    # Jira story point estimator
 │   └── jira-mcp/            # create and verify Jira tickets through MCP
 └── frontend/                # Frontend patterns
-    └── react-hook-form-zod/ # React Hook Form + Zod validation
+    ├── design-system-ai-agent/ # UI work aligned with the project's Design System
+    └── react-hook-form-zod/    # React Hook Form + Zod validation
 ```
 
 Each skill lives in its own directory with a `SKILL.md` file. Branch-specific guidance belongs in linked `references/` files; executable starting points belong in `templates/`. Keep required resources inside the skill so individual installation works.
