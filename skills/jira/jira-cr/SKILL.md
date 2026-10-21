@@ -64,8 +64,14 @@ User-invoked: `/jira-cr` — use this skill explicitly when asked to create a CR
    ```
 
    - Number the rows but do not write `AC1` or `AC2` labels. The team examples describe each criterion directly.
-   - **Heading color**: the team template draws the heading as a level-1, bold heading with a `textColor` mark of `#36b37e` (green) on `Story & CR`. Markdown cannot carry text color, so publish the comment as ADF (`contentFormat: adf`) when the comment tool supports it. If ADF is unavailable, post the markdown without color and tell the user.
-   - **Markdown fallback**: a markdown table cell is one line. Keep one row per item, join the parts of a cell with ` / `, and do not use nested lists or line breaks inside a cell.
+   - **Atlassian Document Format (ADF)**: the Markdown template defines content and order, not the literal body syntax. When the comment tool accepts ADF, send a JSON document with `version: 1`, `type: "doc"`, and ordered `content` nodes.
+     - Use `heading` and `paragraph` nodes for sections. Use `table`, `tableRow`, `tableHeader`, and `tableCell` nodes for both tables. Keep one numbered criterion per Summary table row and omit `AC1` or `AC2` labels.
+     - Apply both `strong` and `textColor` marks to the level-1 `Story & CR` heading, using `#36b37e`.
+     - Keep table-cell content in valid ADF block nodes. See [ADF document structure](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/), [ADF table node](https://developer.atlassian.com/cloud/jira/platform/apis/document/nodes/table/), and [ADF textColor mark](https://developer.atlassian.com/cloud/jira/platform/apis/document/marks/textColor/).
+   - **Comment body format**: inspect the live comment tool schema before publishing. Send the ADF object only when the tool accepts ADF. Do not assume `contentFormat: adf` or serialize ADF as a string.
+     - The current Atlassian MCP comment tool accepts Markdown or HTML strings, not a raw ADF object.
+     - For an HTML table, follow that tool's `getContentFormatGuide` for `addOrEditJiraIssueComment`. Use HTML only when the guide supports the required table structure and formatting.
+   - **Markdown fallback**: use Markdown if the tool cannot accept ADF and its HTML guide does not support the required formatting. A Markdown table cell is one line. Keep one row per item, join the parts of a cell with ` / `, and do not use nested lists or line breaks inside a cell. Tell the user when formatting was lost. If the user explicitly requires ADF and no tool accepts it, return the ADF draft instead of publishing Markdown.
    - **Write for the whole team** (developers, BA, QA). A reader should understand each row without reading the code:
      - Describe each row from the user's side: what the user does and what they see, using screen names. Explain any technical term you cannot avoid.
      - Write each status in plain language, in the summary's language. In Thai use `ทำแล้ว ทดสอบผ่าน`, `ทำแล้ว ทดสอบไม่ผ่าน`, `ทำแล้ว ยังไม่ได้ทดสอบ`, `ทำบางส่วน`, `มีอยู่เดิมก่อนการ์ดนี้`, or `ยังยืนยันไม่ได้`. Use a tested status only when a check was actually run or reported, and always state the result. Add the scope in a few words, and the source when someone else ran it, for example `ทดสอบผ่านบน UAT โดย QA (comment 170406)`. Never write a bare `ทดสอบแล้ว`. Reading the code is not a test.
