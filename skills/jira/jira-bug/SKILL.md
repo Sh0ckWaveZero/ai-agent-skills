@@ -63,15 +63,14 @@ User-invoked: `/jira-bug` — use this skill explicitly when asked to generate a
    ```
 
    - The `Version` row text in the template is an instruction to the developer, not content. Replace it with the list of versions to hotfix when the ticket, the user, or the previous summary provides it. If the list is unknown, keep the instruction text, tell the user in your reply that no list was provided, and do not infer versions.
-   - **Atlassian Document Format (ADF)**: the Markdown template defines content and order, not the literal body syntax. When the comment tool accepts ADF, send a JSON document with `version: 1`, `type: "doc"`, and ordered `content` nodes.
+   - **Atlassian Document Format (ADF)** is the publishing format. The Markdown template defines content and order, not the literal body syntax. Build a JSON document with `version: 1`, `type: "doc"`, and ordered `content` nodes.
      - Use `heading` and `paragraph` nodes for sections. Use `table`, `tableRow`, `tableHeader`, and `tableCell` nodes for both tables.
      - Apply both `strong` and `textColor` marks to the level-1 `Bug` heading, using `#ff5630`.
      - Keep each bug row's number in a paragraph inside its Summary `tableCell`. Follow it with a `bulletList` that has one `listItem` per detail. See [ADF document structure](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/), [ADF table node](https://developer.atlassian.com/cloud/jira/platform/apis/document/nodes/table/), and [ADF textColor mark](https://developer.atlassian.com/cloud/jira/platform/apis/document/marks/textColor/).
-   - **Comment body format**: inspect the live comment tool schema before publishing. Send the ADF object only when the tool accepts ADF. Do not assume `contentFormat: adf` or serialize ADF as a string.
-     - The current Atlassian MCP comment tool accepts Markdown or HTML strings, not a raw ADF object.
-     - For an HTML table, follow that tool's `getContentFormatGuide` for `addOrEditJiraIssueComment`. Use HTML only when the guide supports the required table structure and formatting.
-   - **Markdown fallback**: use Markdown if the tool cannot accept ADF and its HTML guide does not support the required formatting. A Markdown table cell is one line. Keep one row per bug, join the parts of a cell with ` / `, and do not use nested lists or line breaks inside a cell. Tell the user when formatting was lost. If the user explicitly requires ADF and no tool accepts it, return the ADF draft instead of publishing Markdown.
-   - **Bug rows**: write each Summary row as one numbered item with four short bullets: `เกิดอะไรขึ้น`, `สาเหตุ`, `แก้อะไร`, and `หลังแก้เป็นอย่างไร`. In ADF use a nested bullet list in the cell. In the markdown fallback put the four parts on one line, for example `เกิดอะไรขึ้น: ... / สาเหตุ: ... / แก้อะไร: ... / หลังแก้เป็นอย่างไร: ...`. State the confirmed cause. When the cause is not confirmed, label it `สันนิษฐาน` and say what is still unchecked. Do not present a guard that only hides the error as the fix unless it matches the domain contract.
+   - **Publish through Atlassian MCP with ADF**: use the Atlassian MCP comment tool whose `contentFormat` accepts `adf` (for example `addCommentToJiraIssue`). Inspect its live schema first, set `contentFormat: "adf"`, and pass the ADF document in the shape `commentBody` expects; when `commentBody` is a string, send the serialized JSON document.
+     - Do not use a comment tool that offers only `markdown` or `html` (for example `addOrEditJiraIssueComment`) for this summary.
+     - If no available Atlassian MCP comment tool accepts ADF, do not publish. Return the ADF draft and tell the user which tools were checked.
+   - **Bug rows**: write each Summary row as one numbered item with four short bullets: `เกิดอะไรขึ้น`, `สาเหตุ`, `แก้อะไร`, and `หลังแก้เป็นอย่างไร`. State the confirmed cause. When the cause is not confirmed, label it `สันนิษฐาน` and say what is still unchecked. Do not present a guard that only hides the error as the fix unless it matches the domain contract.
    - **Write for the whole team** (developers, BA, QA). A reader should understand each row without reading the code:
      - Describe each row from the user's side: what the user does and what they see, using screen names. Explain any technical term you cannot avoid.
      - Write each status in plain language, in the summary's language. In Thai use `ทดสอบผ่าน`, `ทดสอบไม่ผ่าน`, `ยังไม่ได้ทดสอบ`, or `ยังยืนยันไม่ได้`. Use a tested status only when a check was actually run or reported, such as a reproduction rerun, a UAT result, or a test run, and always state the result. Add the scope in a few words, and the source when someone else ran it, for example `ทดสอบผ่านบน UAT โดย QA (comment 170406)`. Never write a bare `ทดสอบแล้ว`. Reading the code is not a test.
@@ -92,7 +91,7 @@ User-invoked: `/jira-bug` — use this skill explicitly when asked to generate a
    - Prepare the complete comment first. A request to summarize or review ends with a local draft unless publication was explicitly requested. If the user already asked to post it, continue without asking again. If publication is needed but not yet authorized, request approval only for the completed, reviewable draft.
    - Before publishing, confirm the issue and re-read relevant prior summaries to avoid duplicates or superseding a newer update. If the selected changes moved since analysis, refresh the evidence and draft first.
    - Preserve existing comments; this workflow creates a linked follow-up comment rather than deleting or overwriting history.
-   - Use the available Jira comment-creation tool and its supported body format to publish to the verified issue.
+   - Publish the ADF comment to the verified issue through the Atlassian MCP comment tool selected above.
 
 7. **Verify the Result**:
 
