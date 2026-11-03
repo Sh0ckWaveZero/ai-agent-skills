@@ -35,6 +35,7 @@
 | [`jira-plan`](skills/jira/jira-plan/) | user | อ่าน Jira ticket แล้วจัดทำแผนพัฒนาและรายการงาน |
 | [`jira-story-point`](skills/jira/jira-story-point/) | model | ประเมิน Story Points จากข้อกำหนดและงานที่นำมาเทียบได้ |
 | [`jira-mcp`](skills/jira/jira-mcp/) | model | ร่าง สร้าง และตรวจสอบ Jira ticket ผ่าน Atlassian MCP |
+| [`capture-screen`](skills/jira/capture-screen/) | model | จับภาพหน้าจอจาก browser พร้อม caption ต่อ acceptance criterion เป็นไฟล์หลักฐาน |
 | [`design-system-ai-agent`](skills/frontend/design-system-ai-agent/) | model | สร้าง ปรับ หรือรีวิว UI โดยอิง Design System และรูปแบบปัจจุบันของโปรเจกต์ |
 | [`react-hook-form-zod`](skills/frontend/react-hook-form-zod/) | model | พัฒนาฟอร์ม React ที่ตรวจชนิดข้อมูลและ validation ด้วย React Hook Form และ Zod |
 
@@ -104,6 +105,7 @@
 | `react-hook-form-zod` | สร้างฟอร์ม เพิ่ม validation หรือแก้ปัญหา resolver และสถานะ field |
 | `jira-story-point` | ประเมินขนาดงานหรือแนะนำ Story Points ของ Jira ticket |
 | `jira-mcp` | ร่างหรือสร้าง Jira ticket จากข้อกำหนดหรือบันทึกงาน |
+| `capture-screen` | ขอให้ capture screen หรือถ่าย screenshot ต่อ acceptance criterion ของ Jira story หรือ CR |
 
 ตัวอย่าง:
 
@@ -133,7 +135,8 @@ skills/
 │   ├── jira-cr/             # สรุป Change Request
 │   ├── jira-plan/           # วางแผนพัฒนา
 │   ├── jira-story-point/    # ประเมิน Story Points
-│   └── jira-mcp/            # สร้างและตรวจสอบ ticket
+│   ├── jira-mcp/            # สร้างและตรวจสอบ ticket
+│   └── capture-screen/      # screenshot พร้อม caption ต่อ acceptance criterion
 └── frontend/
     ├── design-system-ai-agent/ # ทำ UI ให้ตรงกับ Design System ของโปรเจกต์
     └── react-hook-form-zod/    # ฟอร์ม React และ validation
