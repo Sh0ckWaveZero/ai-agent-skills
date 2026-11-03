@@ -37,6 +37,7 @@ Each skill ships with its own workflow. GitLab and Jira operations require the c
 | [`jira-plan`](skills/jira/jira-plan/) | user | Read a Jira ticket and produce an implementation plan + todo list |
 | [`jira-story-point`](skills/jira/jira-story-point/) | model | Estimate Jira Story Points from ticket evidence and comparable work |
 | [`jira-mcp`](skills/jira/jira-mcp/) | model | Draft, create, and verify new Jira tickets through Atlassian MCP |
+| [`capture-screen`](skills/jira/capture-screen/) | model | Capture sharp, captioned browser screenshots per acceptance criterion as evidence files |
 | [`design-system-ai-agent`](skills/frontend/design-system-ai-agent/) | model | Create, modify, or review UI using a project's current Design System and verified patterns |
 | [`react-hook-form-zod`](skills/frontend/react-hook-form-zod/) | model | Type-safe React forms with React Hook Form + Zod validation |
 
@@ -82,6 +83,7 @@ After installation and discovery, the agent can select these skills for matching
 | `react-hook-form-zod` | Build a form, add validation, or hit a resolver/uncontrolled-field error |
 | `jira-story-point` | Ask to estimate, size, or suggest Story Points for a Jira ticket |
 | `jira-mcp` | Ask to create, open, or draft a new Jira ticket from requirements or notes |
+| `capture-screen` | Ask to capture screen or take screenshots per acceptance criterion for a Jira story or CR |
 
 Example — just ask naturally:
 
@@ -111,7 +113,8 @@ skills/
 │   ├── jira-cr/             # Change Request (CR) summary
 │   ├── jira-plan/           # implementation planner
 │   ├── jira-story-point/    # Jira story point estimator
-│   └── jira-mcp/            # create and verify Jira tickets through MCP
+│   ├── jira-mcp/            # create and verify Jira tickets through MCP
+│   └── capture-screen/      # captioned screenshots per acceptance criterion
 └── frontend/                # Frontend patterns
     ├── design-system-ai-agent/ # UI work aligned with the project's Design System
     └── react-hook-form-zod/    # React Hook Form + Zod validation
