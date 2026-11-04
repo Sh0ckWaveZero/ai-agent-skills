@@ -23,6 +23,8 @@ npx skills add https://github.com/Sh0ckWaveZero/ai-agent-skills.git
 
 Each skill ships with its own workflow. GitLab and Jira operations require the corresponding CLI or connector, authentication, and project access.
 
+If installation fails with `EACCES` or access denied, see the [installation troubleshooting guide](docs/installation-troubleshooting.md) for macOS, Linux, and Windows.
+
 ## Skills
 
 | Skill | Invocation | Description |
