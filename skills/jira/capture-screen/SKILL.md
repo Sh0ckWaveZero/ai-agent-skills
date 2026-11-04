@@ -5,60 +5,88 @@ description: Capture sharp, captioned screenshots of a feature running in the br
 
 # Capture Screen
 
-Produce one sharp, captioned image (PNG, WebP or JPEG) per acceptance criterion (AC) of a feature, ready to attach to Jira.
+Create clear, captioned screenshot files for a Jira story's acceptance criteria (AC). Use `agent-browser` to control the page and capture every raw image. Use `shoot.mjs --caption-only` to add captions.
 
-## Why not the browser pane for the final image
+## Requirements
 
-The built-in browser pane returns every screenshot and `zoom` at its 800px-wide frame ("not magnified"), even when the page runs at devicePixelRatio 2. A 800x260 raw looks soft. Use the pane to **drive and read** the app; take the **final images with headless Chrome** (`scripts/shoot.mjs`, scale 2 = 2880px wide for a 1440 viewport).
+- Node 22+, `agent-browser`, and Chrome, Chromium, or Edge for captioning. Set `CHROME=<path>` if the caption script cannot find the browser.
+- If the CLI is missing, install it with `npm install -g agent-browser`, or substitute `npx --yes agent-browser` for `agent-browser` below. If its browser is missing, run `agent-browser install` (or `npx --yes agent-browser install`).
+- Run `agent-browser skills get core` for the installed version's instructions. See the [quick start](https://agent-browser.dev/quick-start).
+- Python 3 is needed only for the optional login redirect. On Windows, use `py -3 -I` or `python -I` if `python3` is unavailable.
 
-## Directory
+Report installation or browser access failures. Do not claim the page was verified if it could not be opened.
 
-The scripts choose the directory. Pass the issue key. Do not invent a path, and do not use `/tmp`, `%TEMP%`, `Library/Application Support`, or an agent store.
+## 1. Plan the screenshots
 
-```text
-path.join(os.homedir(), '.agents', 'capture-screen', issueKey)
-```
+Read the Jira story's AC and the screenshot list in the latest CR comment. For a subtask, read the parent story's AC. Plan enough images to show each requested state, such as before and after, open and closed, or an empty state.
+
+Run `node scripts/screen-dir.mjs <ISSUE-KEY>`. It creates an owner-only directory and prints its absolute path. Call that path `<dir>` below and quote it in shell commands. Create `<dir>/raw` and write `<dir>/shots.json`. The directory is:
 
 - macOS and Linux: `$HOME/.agents/capture-screen/<ISSUE-KEY>/`
 - Windows: `%USERPROFILE%\.agents\capture-screen\<ISSUE-KEY>\`
 
-`node scripts/screen-dir.mjs <ISSUE-KEY>` creates that directory (owner-only, mode 0700, because it holds the login URL and the Chrome profile) and prints the absolute path. `shoot.mjs` and `launch-redirect.py` resolve the same path from the issue key. Quote the printed path in every shell command and in the reply. A home directory can contain spaces.
+Do not choose another output directory. The directory can contain login credentials and browser profiles.
 
-Inside it: `shots.json`, `s.json`, `raw/`, `out/`.
+## 2. Open the app
 
-## Workflow
+Use an existing authorized `agent-browser` session if available. Otherwise, create a named session. Replace `<SESSION>` with that name in every command and keep the session open until all screenshots are captured. This preserves sessionStorage during the run.
 
-1. **Get the shot list.** Read the Jira story: AC and the screenshot list in the latest CR comment. If the issue is a subtask, the AC lives on the parent. One AC may need several shots (before/after, open/closed, empty state).
-2. **Create the directory** with `node scripts/screen-dir.mjs <ISSUE-KEY>`. Write `shots.json` there.
-3. **Sign in locally.** `shoot.mjs` runs its own Chrome profile and signs in only through `<dir>/s.json`. A session in the pane is not shared with it, so an authenticated app needs `s.json` for the capture run even when the pane is already signed in; without it every shot is the sign-in page. Skip `s.json` only for a public page. Generate it with the repo's own session helper: a script that prints `{"launchUrls":{"local":"<url>"}}` (write it to `<dir>/s.json`).
-   - It signs other sessions out: tell the user, and never rerun it needlessly.
-   - If `launch-redirect.py` or an earlier `shoot.mjs` run already consumed `s.json`, run the helper again right before step 5. This signs the pane out, so finish the pane work in step 4 first. Check the first `out/` image for a sign-in page.
-   - Apps that keep the login in `sessionStorage` lose it when Chrome closes. `.chrome-profile` does not keep that login. `shoot.mjs` must be the Chrome that reads `s.json`. Do not launch a second Chrome to measure a clip. A second run of the session helper signs the user out again: say so before running it.
-   - Treat the token and launch URL as credentials: never print them or read them back. `shoot.mjs` deletes `s.json` only after the login page loaded, so a failed start (no Chrome, bad `shots.json`) keeps the session and you can rerun.
-   - To drive the pane yourself with the same session: run `scripts/launch-redirect.py <ISSUE-KEY>` in the background and open `http://127.0.0.1:9777/` with `preview_start` (`navigate` can be refused for 127.0.0.1). The redirect is one-shot; a failed navigation consumes it (a busy port 9777 does not: it exits before reading `s.json`). Do not run both `shoot.mjs` and the redirect from the same `s.json`: the first one deletes it.
-4. **Find the state of each AC.** Use the pane when it is available. If the pane or Computer Use is unavailable, take ids from the database and deep-link them. Read numbers from the page text, not the image. The pane's date inputs are fiddly: click the day segment and type, or use ArrowUp/Down on a segment. Screenshots from the pane can lag one action behind: wait, then shoot again.
-5. **Run** `node scripts/shoot.mjs <ISSUE-KEY>`. Spec fields are documented at the top of the script. Deep-link each shot by route, set `waitText` to strings that appear when the data has loaded, and clip to just the evidence (banner, table, dialog). The check is `includes`, so each string must be unique to that shot: a short number such as `11` matches other numbers. The script warns when a `waitText` value is shorter than 4 characters. Check the clip does not slice through the next element: lower `clip.height` in `shots.json` and run `--caption-only`, which crops the existing raw to the clip and captions it without logging in again (no image tool needed).
-   - Sizes: `viewport` 1920x1080 with `scale: 1` gives true 1080p (the caption bar adds height below it); `scale: 2` gives sharper crops of small regions. `"format": "webp"` (or `"jpeg"`) plus `"quality"` sets the file type; `--caption-only` can re-caption existing PNG raws as WebP without logging in again. List CSS selectors of dev-only overlays (framework indicators, devtools buttons) in `"hideSelectors"` to hide them before shooting. Every image gets an address-bar strip on top showing the page URL (`baseUrl` + `url`, query and hash removed because they can carry tokens); set `"showUrl": false` to drop it.
-6. **Caption** is done by `shoot.mjs` in the app's own page so it can use the app's web fonts. The default is the system UI font; set `captionFont` (for example `var(--font-body), sans-serif`) to use the app's font. The script prints `loaded fonts:`; confirm the expected family is in it, and check that Thai text renders, not boxes. Caption = AC number + what the image proves, in the story's language, with the visible numbers. If no Chrome, Chromium or Edge is installed, stop and tell the user; do not fall back to the pane's 800px images.
-7. **Check before delivering.** Open a few `out/` images. With `scale: 2` the width is 2 times `clip.width`. Sums must add up (statuses = total, per-type = box total). Note any state you could not reach.
-8. **Clean up.** `shoot.mjs` deletes the Chrome profile (cookies) when a run succeeds; `--keep-profile` keeps it. After a crash run `node scripts/shoot.mjs <ISSUE-KEY> --clean`.
-9. **Deliver.** `SendUserFile` each file in `out/` with its caption, in AC order. If that tool is missing, run `node scripts/shoot.mjs <ISSUE-KEY> --reveal` (`open` on macOS, `explorer` on Windows, `xdg-open` on Linux) and quote the `out` path in the reply.
+For a public page, open its URL directly. If the project requires a session helper:
 
-## Platforms
+1. Tell the user if the helper signs other sessions out. Do not rerun it needlessly.
+2. Write the helper's JSON output to `<dir>/s.json`. Never print the login URL or token.
+3. Run `scripts/launch-redirect.py <ISSUE-KEY>` in the background, then open `http://127.0.0.1:9777/` with `agent-browser --session <SESSION> open`.
 
-- `shoot.mjs` and `screen-dir.mjs` run on macOS, Windows and Linux with Node 22+. Chrome, Chromium or Edge is found automatically; set `CHROME=<path>` if yours is elsewhere. No other tool is needed (no `sips`, no `swiftc`).
-- `launch-redirect.py` needs Python 3: use `py -3 -I` or `python -I` on Windows where `python3` is missing.
-- Shell redirects (`> s.json`) work in PowerShell, cmd and bash. Quote the path.
+The redirect consumes `s.json` once, including on failed navigation. A busy port does not consume it. The separate caption browser does not share the interactive session, so its caption page must be independently accessible.
 
-## Rules
+## 3. Capture each state
 
-- Do not attach to Jira unless the user says so. Atlassian MCP usually has no attach tool: say so and offer the file list.
-- Name files `NN-slug.<ext>` (`ext` follows `format`: png, webp or jpg) and reuse those names in CR cells (`รอแนบภาพ: NN-slug.webp`).
-- Mismatch with the AC (colour, copy, order) goes in the report, not hidden by cropping.
-- Report what was not captured or not tried (Inactive values, Setting changes, other roles).
-- Use only test or seed data; blur or skip real patient data, or say that the data looks like test data and was not verified.
-- Do not download fonts without asking; the app's own fonts or the system fonts are enough.
+1. Set the viewport with `agent-browser --session <SESSION> set viewport <width> <height> <scale>`. Use scale 2 when the raw image needs more detail.
+2. Open the page and run `agent-browser --session <SESSION> snapshot -i`. Use the returned refs with commands such as `click`, `fill`, and `select`.
+3. After navigation or a page change, take another snapshot. Refs can change. Wait for the expected state with `wait --text "expected text"` or an appropriate selector. If the wait fails, do not report the shot as verified.
+4. Read visible numbers using `get text`. Hide development overlays before capture. Save each image with `agent-browser --session <SESSION> screenshot "<dir>/raw/NN-slug.png"`.
+5. Inspect each raw image. Record its actual route without credentials. Never put tokens in `shots.json`.
 
-## Output
+Capture the intended region at the top left of the viewport. The caption script trims only from the bottom of a raw image, and does not use `clip.x` or `clip.y` in caption-only mode. Do not hide an AC mismatch by cropping.
 
-List of files with the AC each one covers, mismatches found, shots not taken, and any session that was invalidated. Quote the `out` directory.
+## Annotate only when useful
+
+When an image describes steps, add a `steps` array to its shot in `shots.json`. Each item has `x`, `y`, and `text`. Coordinates are the marker center in CSS pixels relative to the top-left of the captured crop. For example: `"steps": [{"x": 100, "y": 80, "text": "Open the summary"}]`. The script adds numbered red markers to the image and matching descriptions beneath the caption, in array order. Red identifies the marker, not necessarily an error. Describe any error in `text`. Place markers outside text, values, controls, and other evidence. Inspect their positions in the output.
+
+Use no more than three steps per image. Split longer sequences across images. Capture separate images when a step changes the page state so each image shows the relevant result. Images without steps need no markers.
+
+Add a red rectangle to identify an area such as a table, field, or error message. Add a red arrow to point to a small target or show where to look. Use a thin white outline if needed for contrast. Add shapes only when they clarify the evidence, and do not cover text, values, or controls. The script does not draw rectangles or arrows; use an image tool as described below.
+
+If annotation is needed, edit a copy of the raw image with an available image tool before captioning. Keep the original raw image unchanged and use the annotated copy as the matching raw file for the caption run. Inspect the final image against the original. If a suitable tool is unavailable, deliver the unmarked image and explain the relevant location in the caption.
+
+## 4. Add captions
+
+Document each shot in `shots.json` using the fields described at the top of `scripts/shoot.mjs`. Use the same file stem as its raw image. Set `clip.width` to the raw image width in CSS pixels, and `clip.height` to the desired height. Set `viewport` wide enough for every clip. Set `baseUrl` and `captionPath` to a page accessible to the separate caption browser.
+
+Write each caption in the story's language. Include the AC number, what the image proves, and relevant visible numbers. Put step descriptions in `steps` so the script numbers them consistently. Describe only what the image shows or the action to take; do not claim an unshown result. Use the system font or set `captionFont` to an app font. Do not download fonts without asking.
+
+Use a plain string for an unstyled caption. For selective formatting, use an array of text parts. Supported styles are `bold`, `italic`, `underline`, `strikethrough`, `code`, `subscript`, and `superscript`; omit `style` for normal text. Use `\n` in a JSON string for a new line. Apply emphasis sparingly and avoid long italic Thai passages. Use strikethrough for superseded text, not to conceal data.
+
+Alternatively, set `caption` to an Atlassian Document Format (ADF) version 1 `doc`. Supported nodes are `paragraph`, `heading`, `bulletList`, `orderedList`, `listItem`, `text`, and `hardBreak`. Supported text marks are `strong`, `em`, `underline`, `strike`, `code`, and `subsup` (`attrs.type` is `sub` or `sup`). Other ADF nodes and marks cause an error; adapt the caption explicitly rather than silently dropping content. This is a caption subset, not full ADF support. See [Atlassian's ADF structure](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/).
+
+```json
+"caption": [
+  { "text": "AC1 การเลือกคลังเลือด", "style": "bold" },
+  { "text": "\n1. กดปุ่ม " },
+  { "text": "Open summary", "style": "bold" },
+  { "text": "\n2. เลือกคลังเลือด" }
+]
+```
+
+Run `node scripts/shoot.mjs <ISSUE-KEY> --caption-only`. This reads all matching raw images and writes captioned images to `<dir>/out/`. It does not open the captured state or check `waitText`. Verify the page and raw images before running it. Choose `format` as `png`, `webp`, or `jpeg`; `quality` applies to WebP and JPEG.
+
+The script adds an address strip from `baseUrl` and the shot's `url`, excluding query and hash. Set `showUrl` to false to omit it. To trim the bottom, lower `clip.height` and rerun `--caption-only`. Never use a caption or URL that misrepresents the captured state.
+
+## 5. Verify and deliver
+
+- Open the output images. Check the crop, resolution, caption, Thai text, and displayed numbers. Check that relevant subtotals add up. The output width is `scale` times `clip.width`; the raw image must have enough detail.
+- Check the script's `loaded fonts:` output when using an app font. Thai text must not render as boxes.
+- Report AC mismatches, states not captured or not tried, and any session invalidated. Use only test or seed data. Blur or skip real patient data, or disclose that apparent test data was not verified.
+- Close the browser with `agent-browser --session <SESSION> close` only if you created that session for this task. After a caption-script crash, run `node scripts/shoot.mjs <ISSUE-KEY> --clean` to remove its profile. `--keep-profile` retains it.
+- Deliver the files in AC order with their captions. Use `SendUserFile` if available. Otherwise run `node scripts/shoot.mjs <ISSUE-KEY> --reveal` and provide the absolute `out` directory path.
+- Name outputs `NN-slug.<ext>` and use the same names in CR cells, for example `รอแนบภาพ: 01-stock.webp`. Do not attach files to Jira unless the user asks.
