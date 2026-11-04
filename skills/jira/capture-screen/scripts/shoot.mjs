@@ -22,7 +22,11 @@
 //       "url": "/en/some/route",                    // path on baseUrl
 //       "waitText": ["Visit Details", "Lab Number"],// all must appear in document.body.innerText
 //       "clip": { "x": 0, "y": 0, "width": 1440, "height": 470 },
+//       "steps": [{"x": 100, "y": 80, "text": "Open the summary"}], // marker center in crop CSS pixels
 //       "caption": "AC1 ..."
+//       // Or use an array: [{"text":"AC1", "style":"bold"}, {"text":" details"}]
+//       // Styles: bold, italic, underline, strikethrough, code, subscript, superscript.
+//       // Newlines in text start new lines.
 //     }]
 //   }
 // Output: <dir>/raw/<file> (uncaptioned, 2x) and <dir>/out/<file> (captioned, 2x).
@@ -94,6 +98,33 @@ const findChrome = () => {
 };
 const CHROME = findChrome();
 const spec = JSON.parse(readFileSync(join(dir, 'shots.json'), 'utf8'));
+const adfNodes = new Set(['doc', 'paragraph', 'heading', 'bulletList', 'orderedList', 'listItem', 'text', 'hardBreak']);
+const adfMarks = new Set(['strong', 'em', 'underline', 'strike', 'code', 'subsup']);
+function validateAdf(node) {
+  if (!node || !adfNodes.has(node.type)) throw new Error(`Unsupported ADF node: ${node?.type}`);
+  if (node.type === 'text' && typeof node.text !== 'string') throw new Error('ADF text must be a string');
+  for (const mark of node.marks || []) {
+    if (!adfMarks.has(mark.type) || (mark.type === 'subsup' && !['sub', 'sup'].includes(mark.attrs?.type))) {
+      throw new Error(`Unsupported ADF mark: ${mark.type}`);
+    }
+  }
+  for (const child of node.content || []) validateAdf(child);
+}
+for (const shot of spec.shots || []) {
+  if (shot.steps !== undefined) {
+    if (!Array.isArray(shot.steps) || shot.steps.length > 3) throw new Error('steps must be an array of at most 3 items');
+    for (const step of shot.steps) {
+      if (typeof step.text !== 'string' || !step.text.trim() || !Number.isFinite(step.x) || !Number.isFinite(step.y) ||
+          step.x < 14 || step.y < 14 || step.x > shot.clip?.width - 14 || step.y > shot.clip?.height - 14) {
+        throw new Error('Each step needs text and coordinates at least 14 CSS pixels inside the clip');
+      }
+    }
+  }
+  if (shot.caption && !Array.isArray(shot.caption) && typeof shot.caption === 'object') {
+    if (shot.caption.type !== 'doc' || shot.caption.version !== 1) throw new Error('ADF caption must be a version 1 doc');
+    validateAdf(shot.caption);
+  }
+}
 const vp = spec.viewport || { width: 1440, height: 900 };
 const scale = spec.scale || 2;
 const font = spec.captionFont || 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
@@ -280,15 +311,66 @@ for (const s of rawShots) {
     }
     // The wrapper crops the raw to clip.height, so --caption-only can trim without an image tool.
     const crop = document.createElement('div');
-    crop.style.cssText = 'width:${width}px;height:${s.clip.height}px;overflow:hidden;';
+    crop.style.cssText = 'position:relative;width:${width}px;height:${s.clip.height}px;overflow:hidden;';
     const img = document.createElement('img');
     img.src = ${JSON.stringify(dataUrl)};
     img.style.cssText = 'display:block;width:${width}px;';
     crop.append(img);
+    const steps = ${JSON.stringify(s.steps || [])};
+    steps.forEach((step, index) => {
+      const marker = document.createElement('span');
+      marker.style.cssText = 'position:absolute;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border:2px solid white;border-radius:50%;background:#b42318;color:white;font:600 14px/1 system-ui,sans-serif;box-sizing:border-box;';
+      marker.style.left = (step.x - 12) + 'px';
+      marker.style.top = (step.y - 12) + 'px';
+      marker.textContent = String(index + 1);
+      crop.append(marker);
+    });
     const bar = document.createElement('div');
-    bar.style.cssText = 'border-top:3px solid #0d7385;padding:18px 24px 20px;color:#1f1f1f;';
-    bar.style.font = ${JSON.stringify(`600 26px/1.4 ${font}`)};
-    bar.textContent = ${JSON.stringify(s.caption)};
+    bar.style.cssText = 'border-top:3px solid #0d7385;padding:18px 24px 20px;color:#1f1f1f;white-space:pre-wrap;overflow-wrap:anywhere;';
+    bar.style.font = ${JSON.stringify(`400 18px/1.4 ${font}`)};
+    const caption = ${JSON.stringify(s.caption)};
+    if (Array.isArray(caption)) {
+      for (const part of caption) {
+        const styles = new Map([['bold', 'strong'], ['italic', 'em'], ['underline', 'u'], ['strikethrough', 's'], ['code', 'code'], ['subscript', 'sub'], ['superscript', 'sup']]);
+        const tag = styles.get(part.style) || 'span';
+        const el = document.createElement(tag);
+        el.textContent = part.text;
+        bar.append(el);
+      }
+    } else if (caption && typeof caption === 'object') {
+      const render = (node) => {
+        if (node.type === 'text') {
+          let result = document.createTextNode(node.text);
+          for (const mark of node.marks || []) {
+            const tags = { strong: 'strong', em: 'em', underline: 'u', strike: 's', code: 'code' };
+            const wrapper = document.createElement(mark.type === 'subsup' ? mark.attrs.type : tags[mark.type]);
+            wrapper.append(result);
+            result = wrapper;
+          }
+          return result;
+        }
+        const tags = { doc: 'div', paragraph: 'div', heading: 'div', bulletList: 'ul', orderedList: 'ol', listItem: 'li', hardBreak: 'br' };
+        const el = document.createElement(tags[node.type]);
+        if (node.type === 'heading') el.style.fontWeight = '600';
+        if (node.type === 'orderedList' && node.attrs?.order != null) el.start = node.attrs.order;
+        if (node.type === 'bulletList' || node.type === 'orderedList') el.style.cssText = 'margin:0;padding-left:1.5em;';
+        for (const child of node.content || []) el.append(render(child));
+        return el;
+      };
+      bar.append(render(caption));
+    } else {
+      bar.textContent = caption;
+    }
+    if (steps.length) {
+      const list = document.createElement('ol');
+      list.style.cssText = 'margin:4px 0 0;padding-left:1.5em;';
+      for (const step of steps) {
+        const item = document.createElement('li');
+        item.textContent = step.text;
+        list.append(item);
+      }
+      bar.append(list);
+    }
     o.append(crop, bar);
     document.body.append(o);
     await img.decode();
