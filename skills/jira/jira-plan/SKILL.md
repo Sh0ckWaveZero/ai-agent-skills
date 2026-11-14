@@ -9,7 +9,7 @@ This skill guides the agent in reading a Jira ticket and producing a detailed, a
 
 ## Trigger
 
-User-invoked: `/jira-plan` — or when asked to plan or prepare an implementation strategy for a Jira ticket. Examples:
+User-invoked: `/jira-plan`, or the skill named in a request to plan a Jira ticket. Examples:
 - "Plan the implementation for PROJ-001"
 - "Read ticket PROJ-123 and create a plan"
 - "jira-plan for [Ticket ID]"
@@ -93,7 +93,7 @@ Format the plan using the appropriate template below.
 - [ ] All ACs are implemented and verified
 - [ ] Relevant tests and repository-required checks pass, with evidence recorded
 - [ ] If UI is affected, follow evidenced project components and tokens where available, and record any missing pattern or justified exception
-- [ ] Code reviewed and approved
+- [ ] Ready for code review (approval is the reviewer's step)
 - [ ] No regression in related features
 ```
 

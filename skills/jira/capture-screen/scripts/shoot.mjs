@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-// Sharp, captioned screenshots through headless Chrome (device scale factor 2).
-// Usage: node shoot.mjs <ISSUE-KEY> [--caption-only|--clean|--reveal]
+// Captions the raw screenshots in <dir>/raw through headless Chrome (device scale factor 2).
+// It never opens the app under test to take a screenshot and never writes to <dir>/raw.
+// Usage: node shoot.mjs <ISSUE-KEY> [--caption-only|--keep-profile|--clean|--reveal]
 //
 // The directory comes from screen-dir.mjs. Do not pass a path.
 //   path.join(os.homedir(), '.agents', 'capture-screen', issueKey)
 //
-// <dir>/s.json    JSON printed by the project's session helper ({"launchUrls":{"local":"<url>"}}).
-//                 Read once and deleted; the URL is never printed.
+// <dir>/raw/<file>  raw screenshots, captured beforehand (png, webp, jpg or jpeg).
 // <dir>/shots.json
 //   {
-//     "baseUrl": "http://localhost:4200",          // app under test (also hosts the caption font)
+//     "baseUrl": "http://localhost:4200",          // app under test (shown in the address strip, hosts the caption font)
 //     "captionPath": "/en",                         // any public-ish app route, loads the app fonts
 //     "viewport": { "width": 1440, "height": 900 },
 //     "scale": 2,                                   // 1 with a 1920x1080 viewport = true 1080p
@@ -19,9 +19,8 @@
 //     "hideSelectors": ["nextjs-portal"],           // optional CSS selectors hidden before shooting (dev overlays)
 //     "shots": [{
 //       "file": "01-slug.png",
-//       "url": "/en/some/route",                    // path on baseUrl
-//       "waitText": ["Visit Details", "Lab Number"],// all must appear in document.body.innerText
-//       "clip": { "x": 0, "y": 0, "width": 1440, "height": 470 },
+//       "url": "/en/some/route",                    // path on baseUrl, shown in the address strip
+//       "clip": { "width": 1440, "height": 470 },   // required: raw width and wanted height, CSS pixels
 //       "steps": [
 //         // Framed step: outlines the element's border box and points a numbered pin at it.
 //         // frame is in crop CSS pixels; radius is the element's own corner radius (default 4).
@@ -36,17 +35,15 @@
 //       // Newlines in text start new lines.
 //     }]
 //   }
-// Output: <dir>/raw/<file> (uncaptioned, 2x) and <dir>/out/<file> (captioned, 2x).
+// Output: <dir>/out/<file> (captioned, at "scale").
 //
 // Flags:
-//   --caption-only   skip login and shooting; caption the files already in <dir>/raw
+//   --caption-only   accepted for older commands; captioning is the only mode
 //   --keep-profile   keep <dir>/.chrome-profile after a run (default: deleted on success)
 //   --clean          delete <dir>/.chrome-profile and exit
 //   --reveal         open <dir>/out (open on macOS, explorer on Windows, xdg-open on Linux)
-// The Chrome profile lives in <dir>/.chrome-profile and holds cookies, so it is deleted
-// when a run finishes. sessionStorage auth dies when this process exits anyway,
-// so this process must be the one that reads s.json. Do not start a second Chrome.
-// s.json is deleted only after the login page loaded, so a failed start keeps the session.
+// The Chrome profile lives in <dir>/.chrome-profile and is deleted when a run finishes.
+// This script does not read <dir>/s.json; launch-redirect.py owns the login URL.
 
 import { spawn } from 'node:child_process';
 import { chmodSync, mkdirSync, readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs';
@@ -64,7 +61,7 @@ const captionOnly = flags.includes('--caption-only');
 const revealFlag = flags.includes('--reveal');
 const clean = flags.includes('--clean');
 const revealOnly = revealFlag && !captionOnly && !clean;
-const shouldShoot = captionOnly || (!clean && !revealOnly);
+const shouldCaption = captionOnly || (!clean && !revealOnly);
 const reveal = (folder) => {
   if (!existsSync(folder)) throw new Error(`nothing to open: ${folder}`);
   const command =
@@ -72,7 +69,7 @@ const reveal = (folder) => {
   spawn(command, [folder], { stdio: 'ignore', detached: true }).unref();
 };
 if (clean) rmSync(join(dir, '.chrome-profile'), { recursive: true, force: true });
-if (!shouldShoot) {
+if (!shouldCaption) {
   if (revealFlag) reveal(join(dir, 'out'));
   process.stdout.write(`${dir}\n`);
   process.exit(0);
@@ -166,6 +163,10 @@ function pinTip(shot, step) {
   return { ...tips[side], side, grow: pinGrowth[side] };
 }
 for (const shot of spec.shots || []) {
+  const clip = shot.clip || {};
+  if (![clip.width, clip.height].every((n) => Number.isFinite(n) && n > 0)) {
+    throw new Error(`${shot.file}: clip needs a positive width and height`);
+  }
   if (shot.steps !== undefined) {
     if (!Array.isArray(shot.steps) || shot.steps.length > 3) throw new Error('steps must be an array of at most 3 items');
     for (const step of shot.steps) {
@@ -189,17 +190,10 @@ const font = spec.captionFont || 'system-ui, -apple-system, "Segoe UI", Roboto, 
 const hideCss = (spec.hideSelectors || []).length ? `${spec.hideSelectors.join(', ')} { display: none !important; }` : '';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Owner-only: the directory holds s.json (a login URL) and the Chrome profile.
+// Owner-only: the directory can hold s.json (a login URL) and the Chrome profile.
 mkdirSync(dir, { recursive: true, mode: 0o700 });
 chmodSync(dir, 0o700);
-mkdirSync(join(dir, 'raw'), { recursive: true });
 mkdirSync(join(dir, 'out'), { recursive: true });
-
-const sessionPath = join(dir, 's.json');
-const launchUrl =
-  !captionOnly && existsSync(sessionPath)
-    ? JSON.parse(readFileSync(sessionPath, 'utf8').match(/\{[\s\S]*\}/)[0]).launchUrls.local
-    : null;
 
 const profile = join(dir, '.chrome-profile');
 mkdirSync(profile, { recursive: true });
@@ -277,20 +271,12 @@ await send('Emulation.setDeviceMetricsOverride', {
   mobile: false,
 });
 
-if (launchUrl && !captionOnly) {
-  await goto(launchUrl);
-  await waitFor(`document.readyState === 'complete' && document.body.innerText.length > 20`);
-  await sleep(2500);
-  // The login page loaded; only now is it safe to drop the one-time launch URL.
-  rmSync(sessionPath, { force: true });
-}
-
 // spec.format: "png" (default), "webp" or "jpeg"; spec.quality 1-100 for webp/jpeg.
 const format = spec.format || 'png';
 const ext = format === 'jpeg' ? 'jpg' : format;
 const quality = spec.quality || 95;
 const stem = (file) => file.replace(/\.[a-z0-9]+$/i, '');
-const mimeOf = (name) => ({ png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg' })[name.split('.').pop().toLowerCase()];
+const mimeOf = (name) => ({ png: 'image/png', webp: 'image/webp', jpg: 'image/jpeg', jpeg: 'image/jpeg' })[name.split('.').pop().toLowerCase()];
 const png = async (clip) => {
   const r = await send('Page.captureScreenshot', {
     format,
@@ -304,44 +290,12 @@ const png = async (clip) => {
 const rawShots = [];
 for (const s of spec.shots) {
   s.outName = `${stem(s.file)}.${ext}`;
-  if (captionOnly) {
-    // Reuse whatever raw exists (any format), e.g. PNG raws re-captioned as WebP.
-    const rawName = [s.outName, `${stem(s.file)}.png`, `${stem(s.file)}.webp`, `${stem(s.file)}.jpg`].find((n) =>
-      existsSync(join(dir, 'raw', n)),
-    );
-    if (!rawName) throw new Error(`no raw for ${s.file}`);
-    rawShots.push({ ...s, buf: readFileSync(join(dir, 'raw', rawName)), mime: mimeOf(rawName) });
-    continue;
-  }
-  await goto(spec.baseUrl + s.url);
-  for (const text of s.waitText || []) {
-    if (text.trim().length < 4) console.error(`WARN ${s.file}: waitText too short (${JSON.stringify(text)})`);
-  }
-  // Case and whitespace insensitive: innerText puts line breaks between block elements.
-  const squash = (t) => t.toLowerCase().replace(/\s+/g, ' ').trim();
-  const texts = JSON.stringify((s.waitText || []).map(squash));
-  const ok = await waitFor(
-    `${texts}.every(t => document.body.innerText.toLowerCase().replace(/\\s+/g, ' ').includes(t))`,
+  // Use whatever raw exists (any format), e.g. PNG raws captioned as WebP.
+  const rawName = [s.outName, ...['png', 'webp', 'jpg', 'jpeg'].map((e) => `${stem(s.file)}.${e}`)].find((n) =>
+    existsSync(join(dir, 'raw', n)),
   );
-  if (!ok) console.error(`WARN ${s.file}: waitText not found`);
-  if (await evaluate(`document.body.innerText.includes('Please sign in')`)) {
-    console.error(`WARN ${s.file}: page shows sign-in`);
-  }
-  await sleep(1500);
-  // Hide dev-only overlays listed in spec.hideSelectors so they stay out of evidence.
-  if (hideCss) {
-    await evaluate(`(() => {
-      if (document.getElementById('__cs_hide')) return;
-      const st = document.createElement('style');
-      st.id = '__cs_hide';
-      st.textContent = ${JSON.stringify(hideCss)};
-      document.head.append(st);
-    })()`);
-  }
-  const buf = await png(s.clip);
-  writeFileSync(join(dir, 'raw', s.outName), buf);
-  rawShots.push({ ...s, buf, mime: mimeOf(s.outName) });
-  console.log(`raw ${s.outName}`);
+  if (!rawName) throw new Error(`no raw for ${s.file} in ${join(dir, 'raw')}`);
+  rawShots.push({ ...s, buf: readFileSync(join(dir, 'raw', rawName)), mime: mimeOf(rawName) });
 }
 
 // Caption: overlay on an app page so the app's own web font applies.
@@ -363,11 +317,11 @@ for (const s of rawShots) {
     urlBar.style.cssText = 'background:#f1f3f4;border-bottom:1px solid #dadce0;padding:10px 24px;';
     const pill = document.createElement('div');
     pill.style.cssText = 'background:#fff;border-radius:999px;padding:7px 18px;font:500 18px/1.3 -apple-system,"Segoe UI",Roboto,sans-serif;color:#3c4043;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;';
-    pill.textContent = ${JSON.stringify((spec.baseUrl + s.url).replace(/[?#].*$/, ''))};
+    pill.textContent = ${JSON.stringify((spec.baseUrl + (s.url || '')).replace(/[?#].*$/, ''))};
     urlBar.append(pill);
     o.append(urlBar);`
     }
-    // The wrapper crops the raw to clip.height, so --caption-only can trim without an image tool.
+    // The wrapper crops the raw to clip.height, so lowering clip.height trims without an image tool.
     const crop = document.createElement('div');
     crop.style.cssText = 'position:relative;width:${width}px;height:${s.clip.height}px;overflow:hidden;';
     const img = document.createElement('img');
@@ -389,9 +343,12 @@ for (const s of rawShots) {
         // Frame follows the element's border box: same corners, grown by the gap. White under red for contrast.
         const f = step.frame;
         const grow = ${FRAME_GAP} + 1;
-        const w = f.width + grow * 2;
-        const h = f.height + grow * 2;
-        const rect = { x: f.x - grow, y: f.y - grow, width: w, height: h, rx: Math.min((f.radius ?? 4) + grow, w / 2, h / 2), fill: 'none' };
+        // Near a crop edge the outline moves inward, so every side stays visible.
+        const x0 = Math.max(f.x - grow, 2);
+        const y0 = Math.max(f.y - grow, 2);
+        const w = Math.min(f.x + f.width + grow, ${width} - 2) - x0;
+        const h = Math.min(f.y + f.height + grow, ${s.clip.height} - 2) - y0;
+        const rect = { x: x0, y: y0, width: w, height: h, rx: Math.min((f.radius ?? 4) + grow, w / 2, h / 2), fill: 'none' };
         overlay.append(svgEl('rect', { ...rect, stroke: '#fff', 'stroke-width': 4 }), svgEl('rect', { ...rect, stroke: red, 'stroke-width': 2 }));
         // Pin: a disc whose sharp corner is the tip, drawn growing up and right, then mirrored for its side.
         const r = ${PIN_SIZE} / 2;

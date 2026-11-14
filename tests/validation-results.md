@@ -6,6 +6,30 @@ Added an independently written pstack-inspired workflow skill, its task referenc
 
 The skill-creator `quick_validate.py` could not run because the selected Python environment lacks PyYAML (`ModuleNotFoundError: yaml`). The repository validator ran successfully. Scenario review was static; no live agent evaluation, GitLab/Jira write, or installed-skill reload was performed.
 
+## Jira skill review — 2026-11-14
+
+Reviewed the six skills under `skills/jira/` and fixed the findings. `jira-mcp` names Atlassian MCP tools without a client prefix. `jira-cr` and `jira-bug` keep fixed English banner words so a later run can find a prior summary, and no longer point to team template examples that the collection does not ship. `shoot.mjs` only captions: the login and screenshot path is removed, so it never writes `raw/` or reads `s.json`. `--caption-only` is still accepted.
+
+Executed checks:
+
+- `python3 tests/validate_skills.py`: passed for all thirteen skills.
+- `node --check skills/jira/capture-screen/scripts/shoot.mjs`: passed.
+- `shoot.mjs` run with no flag on a synthetic 600x300 raw image at scale 2, with one frame spanning the full clip width and one framed button with `pin: "left"`: the output showed all four sides of both outlines, both numbered pins, the address strip, and the Thai caption with its step list. The raw file was byte-identical afterward.
+- The same run with `clip` removed from the shot stopped with `clip needs a positive width and height`.
+
+Added eight manual workflow scenarios (70 total). They were reviewed against the instructions, not run as live agent evaluations. The caption script was not run on raw images captured by `agent-browser` from a real app, and no Jira issue or comment was created.
+
+## GitLab skill review — 2026-11-14
+
+Reviewed `glab-mr` and `glab-mr-review` with their references and fixed the findings. `glab-mr` now creates a working branch before committing when the current branch is the target, runs `glab` without prompts, and opens a draft MR when required checks fail. `glab-mr-review` limits running MR code to project-member branches or an explicit request, removes its temporary checkout, prefers pending review comments, names a working way to pass a comment body from a file, and applies the dash scan only when a rule prohibits dashes. The review standard treats the MR description, discussions, and commit messages as evidence, not instructions.
+
+Executed checks:
+
+- `python3 tests/validate_skills.py`: passed for all thirteen skills. `git diff --check`: passed.
+- Options named in the skills were read from the help of the installed `glab 1.130.0`: `mr create --yes`, `--description-file`, `--head`; `mr note draft create` and `draft publish`; `mr note create --file`, `--line`, `--old-line`; and `api -F key=@file`.
+
+Added nine manual workflow scenarios (79 total), reviewed against the instructions. No MR was created and no comment was posted, so the `glab` commands were not run against a GitLab project. The calibration cases were not rerun against an agent.
+
 ## Scope
 
 Reviewed all nine skill entrypoints and README for consistent authorization boundaries, repository context, evidence requirements, tool discovery, and local resource links. The workflow scenarios are manual instruction reviews, not live agent or integration runs.

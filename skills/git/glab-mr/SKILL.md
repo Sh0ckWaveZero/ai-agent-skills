@@ -18,7 +18,9 @@ Fetch relevant refs and inspect existing MRs for the source/target pair before c
 
 Inspect repository MR templates and the existing MR description, including required sections and established language. Infer the title and description from the complete verified MR diff and ticket context, including previously committed changes. Use requested assignee/reviewer values, otherwise repository defaults if available; omit optional assignments when no evidence identifies them. Verify exact usernames before assigning them.
 
-Completion: project/host, remote, source, target, requested publication scope, and existing MR state are known.
+If the current branch is the target, the default branch, or a protected branch, do not commit there. Create a working branch from it first, named by repository convention, and carry the uncommitted changes onto it. If the requested changes are already committed on that branch, tell the user and ask how to move them; do not rewrite or reset it.
+
+Completion: project/host, remote, a source branch that is not the target, target, requested publication scope, and existing MR state are known.
 
 ## 2. Select and verify changes
 
@@ -55,7 +57,11 @@ git diff --name-status <remote>/<target>...HEAD
 git diff --check <remote>/<target>...HEAD
 ```
 
-Push only the selected working branch. Use the installed `glab` command help to confirm supported create/update options; pass explicit source and target. Prepare multiline descriptions as literal text in a temporary file and use a supported file-input option or structured API body, preserving newlines. The prepared description must meet the guide's completion criteria and the repository template; remove unused optional sections and example placeholders.
+Push only the selected working branch. Use the installed `glab` command help to confirm supported create/update options; pass explicit source and target. For a source branch in a fork, also name the head repository with the option the help lists.
+
+Run `glab` without prompts. `glab mr create` asks for confirmation and can open an editor, which stalls an agent session. Supply the title and description as arguments and pass the option that skips the confirmation, for example `--title`, `--description-file <file>`, and `--yes` where the installed version lists them. If a command still waits for input, stop it and report that, do not answer the prompt blindly.
+
+When required checks failed or have not run, create the MR as a draft if the user asked to publish anyway, and say why in the description. Prepare multiline descriptions as literal text in a temporary file and use a supported file-input option or structured API body, preserving newlines. The prepared description must meet the guide's completion criteria and the repository template; remove unused optional sections and example placeholders.
 
 Recheck for an existing matching MR immediately before creating one. Update the matching open MR rather than creating a duplicate. Re-read the current description before updating to preserve concurrent human edits, useful attachments, and unrelated content. Refresh stale generated text to match the final scope. If human-authored claims conflict with verified behavior, resolve the conflict rather than silently retaining a misleading claim or deleting the author's context. Preserve human review discussions.
 
