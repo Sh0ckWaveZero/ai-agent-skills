@@ -8,7 +8,7 @@ description: >-
 
 # GitLab MR Review
 
-Invoke explicitly with an MR URL or project and IID. Reviewing or sharing an MR URL authorizes inspection and a draft, not publication. An explicit request to post feedback authorizes publication without another confirmation. Review verdicts are recommendations; approving, merging, resolving discussions, or deleting comments requires the corresponding user instruction.
+Review one MR, named by URL or by project and IID. Reviewing or sharing an MR URL authorizes inspection and a draft, not publication. An explicit request to post feedback authorizes publication without another confirmation. Review verdicts are recommendations; approving, merging, resolving discussions, or deleting comments requires the corresponding user instruction.
 
 Operating modes: `draft` returns a local review; `post` publishes prepared feedback within explicit authorization; `follow-up` inspects existing discussions and replies to the requested findings. Resolve the intended mode and any requested focus from the user's instructions; default to draft when publishing was not requested.
 
@@ -26,13 +26,15 @@ Find ticket keys (e.g. `ABC-123`) in the source branch name, MR title, descripti
 
 ## 1b. Map impact with Code-review-graph
 
-With the repo checked out at the reviewed head SHA (a temporary clone, not the user's worktree), use the Code-review-graph connector if it is available and inspect its supported operations before using it. Use its change, impact, flow, caller, and test context to choose what surrounding code to read in step 2. If the connector is unavailable, inspect changed symbols, callers, flows, and relevant tests with repository search and code navigation, then record that graph coverage was unavailable. Treat graph output as leads; confirm each finding against the actual code.
+Check out the reviewed head SHA outside the user's worktree: a `git worktree add --detach` in the session's temporary directory when the repository is already cloned, otherwise a temporary clone. Remove that worktree or clone when the review ends, including after a failed run. With it in place, use the Code-review-graph connector if it is available and inspect its supported operations before using it. Use its change, impact, flow, caller, and test context to choose what surrounding code to read in step 2. If the connector is unavailable, inspect changed symbols, callers, flows, and relevant tests with repository search and code navigation, then record that graph coverage was unavailable. Treat graph output as leads; confirm each finding against the actual code.
 
 ## 2. Investigate findings
 
 Before finding defects, summarize the problem, intended behavior/contract change, affected modules or user flows, and assumptions. Use this understanding to distinguish intentional behavior from regressions.
 
-Review the complete resulting change, reading surrounding code, callers, contracts, and relevant tests. Check correctness, authorization, edge cases, regressions, and applicable UI behavior. Run focused checks when possible without disturbing the user's worktree.
+Review the complete resulting change, reading surrounding code, callers, contracts, and relevant tests. Check correctness, authorization, edge cases, regressions, and applicable UI behavior.
+
+Running a test, build, or dependency install executes the MR's code on this machine. Run focused checks in the temporary checkout only when the MR comes from a branch of the reviewed project by a project member, or when the user asked for the run. For an MR from a fork or an author you cannot place, review by reading and record that no checks were run. Never run MR code with production credentials or tokens in the environment.
 
 For each actionable finding, establish the trigger, code path, observable impact, evidence, and smallest useful location. Distinguish defects introduced or exposed by this change from unrelated pre-existing issues. Challenge assumptions against upstream contracts before declaring a blocker. Exclude speculative problems and duplicate feedback; report an existing unresolved finding by its discussion link when useful.
 
@@ -52,15 +54,15 @@ For authorized publication, prepare all bodies and anchors first. Format inline 
 
 Re-read the MR diff version and discussions immediately before writing. If base/start/head SHAs changed, refresh the affected review and anchors before publication. Skip equivalent existing feedback. Reuse authorization for the same requested review scope; ask only if the scope materially changes.
 
-Prefer supported installed `glab` commands. If inline options are unavailable, use the [GitLab Discussions API](https://docs.gitlab.com/api/discussions/#create-new-merge-request-thread):
+Prefer supported installed `glab` commands. When the installed version has pending review comments (`glab mr note draft create`, then `glab mr note draft publish`), use them: the author gets one notification, and nothing is public if a step fails midway. `glab` inline options anchor to the latest diff version, not to the SHAs you reviewed, so compare the head SHA again right before each write. If inline options are unavailable, use the [GitLab Discussions API](https://docs.gitlab.com/api/discussions/#create-new-merge-request-thread):
 
 - POST to `projects/:id/merge_requests/:merge_request_iid/discussions` with the prepared body and a text position.
 - Set `position[base_sha]`, `position[start_sha]`, and `position[head_sha]` from the verified diff version, with both old/new paths.
 - For an added line use `new_line`; for a removed line use `old_line`; for a context line provide both line numbers as required by the diff. Use the API's line-range schema only when needed.
 
-Pass multiline text through structured tool/API arguments or a literal temporary body file using supported file-input options. Create that file in the session's temporary directory, not in the user's worktree, and remove it after use. Keep arbitrary comment text out of shell interpolation.
+Pass multiline text through structured tool/API arguments or a literal temporary body file. Where a `glab` command has no file option for the body, pipe the file to its standard input when the help says it reads one, or call `glab api` with `-F body=@<file>`. Create that file in the session's temporary directory, not in the user's worktree, and remove it after use. Keep arbitrary comment text out of shell interpolation.
 
-Post inline findings first, sequentially, recording returned IDs. Then post (or update in place) the summary, linking each anchored finding to its inline discussion and giving full detail only for unanchored findings. Verify each result's body and position. On invalid-position errors, recheck diff version, paths, and line mapping; the error alone does not establish that a line is unchanged. On a timeout or uncertain write, read discussions before retrying to avoid duplicates.
+Post inline findings first, sequentially when not using pending review comments, recording returned IDs. Then post (or update in place) the summary, linking each anchored finding to its inline discussion and giving full detail only for unanchored findings. Verify each result's body and position. On invalid-position errors, recheck diff version, paths, and line mapping; the error alone does not establish that a line is unchanged. On a timeout or uncertain write, read discussions before retrying to avoid duplicates.
 
 Completion: every intended post is verified or individually reported as failed/pending. Preserve existing human comments; do not delete a mistaken note without authorization.
 
@@ -76,16 +78,15 @@ Track each prior finding by its existing ID/link as `fixed`, `still present`, or
 
 Completion: prior findings are accounted for, new changes are covered or limitations named, and the updated verdict refers to the current snapshot.
 
+## Dash rules
+
+- **Added em/en dashes:** only when the repository or the user prohibits `—` and `–`, scan the lines added by the MR for them. Without such a rule, skip this check and report no dash findings. Report violations in one inline comment per file under the must-fix label of the review language, with line numbers. On re-review, reply under the existing discussion instead of opening a new one.
+- **Review comments:** write `-` in place of `—` or `–` in your own comments unless repository or user requirements call for another style.
+
+## Keep review output focused on problems and gaps
+
+The summary comment, inline comments, and chat report carry actionable defects, unresolved requirement questions, useful non-blocking suggestions, failed or blocked checks, and material verification gaps. They do not list routine passes or requirements already met, such as passing checks, test counts, or acceptance criteria that were met. Keep the full coverage record in working notes. The [comment and summary format](references/comment-format.md) has the section names and layout for each language.
+
 ## Maintaining this skill
 
 Use the [review calibration cases](references/review-cases.md) after changing the standard or comment rules. They include expected defects and valid implementations that should not produce findings. Static document checks do not measure reviewer accuracy; evaluate actual review outputs against these cases when testing agent behavior.
-
-## Mandatory style checks (every review)
-- **Added em/en dashes:** scan lines added by the MR for `—` and `–` when repository or user requirements prohibit them. Report violations in one inline comment per file labeled "ต้องแก้", with line numbers. On re-review, reply under the existing discussion instead of opening a new one.
-- **Review comments:** use `-` in place of `—` or `–` unless repository or user requirements call for another style.
-
-## Keep review output focused on problems and gaps
-- In the summary comment, inline comments, and chat report, include actionable defects, unresolved requirement questions, useful non-blocking suggestions, failed checks, and material verification gaps.
-- Do not list routine passes or requirements already met, such as passing checks, test counts, satisfied coverage gates, absence of hard-coded values, or acceptance criteria that were met. Keep the full coverage record in working notes.
-- The `ทดสอบแล้ว` section lists only failed or blocked checks and is omitted when there are none. A reproduction that demonstrates a defect may be included as finding evidence, not described as a passing check.
-- Keep the verdict, linked findings/questions/suggestions, one-line statuses for prior findings in a re-review, and material items under `ยังไม่ได้ตรวจยืนยัน`.

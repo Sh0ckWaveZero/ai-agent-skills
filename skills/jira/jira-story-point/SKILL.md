@@ -81,7 +81,7 @@ Return the following structure:
 - [Unknown that could change the estimate]
 
 ### Planning note
-[Say whether the ticket is small enough to keep as one item. For 13 or 21, recommend concrete split boundaries.]
+[Say whether the ticket is small enough to keep as one item. For a value at or above the team's split threshold (13 on the fallback scale), recommend concrete split boundaries.]
 
 ### Questions before final sizing
 - [Only questions that could materially change the point value]

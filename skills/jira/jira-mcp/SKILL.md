@@ -5,7 +5,7 @@ description: Create new Jira tickets through the configured Atlassian MCP tools.
 
 # Create Jira Ticket
 
-Create one new Jira issue through the live `mcp__atlassian__*` tools. Keep the ticket faithful to the user's source material, validate Jira metadata before writing, preview the payload, obtain confirmation, and verify the created issue.
+Create one new Jira issue through the live Atlassian MCP tools. Keep the ticket faithful to the user's source material, validate Jira metadata before writing, preview the payload, obtain confirmation, and verify the created issue.
 
 ## Scope
 
@@ -18,7 +18,7 @@ This skill covers:
 - Drafting and confirming summary, description, acceptance criteria, labels, components, priority, parent, fix versions, and custom fields.
 - Creating and verifying the new issue.
 
-Do not edit, transition, comment on, assign, link, or log work on an existing issue in this skill. Route those requests to the appropriate Jira operation skill or handle them directly only when another skill explicitly covers them.
+Do not edit, transition, comment on, assign, link, or log work on an existing issue in this skill. For a CR or bug summary comment, use `jira-cr` or `jira-bug` when installed. For any other change to an existing issue, tell the user this skill does not cover it, and handle the request outside this skill.
 
 ## Required Inputs
 
@@ -37,23 +37,23 @@ Do not invent missing business requirements. Ask only for information that is re
 
 ## Tool Sequence
 
-Use the exact tools available in the current runtime:
+The names below are the Atlassian MCP tool names without their prefix. The prefix depends on the client and on how the server was added, for example `mcp__atlassian__createJiraIssue` or `mcp__claude_ai_Atlassian__createJiraIssue`. Find each tool by its unprefixed name among the tools available in the current runtime, and read its live schema before calling it:
 
-1. `mcp__atlassian__getAccessibleAtlassianResources` — resolve `cloudId` when a usable Atlassian hostname is not already known.
-2. `mcp__atlassian__getVisibleJiraProjects` — validate or find the project. Use `action: "create"` when checking create access.
-3. `mcp__atlassian__getJiraProjectIssueTypesMetadata` — list issue types available in the project.
-4. `mcp__atlassian__getJiraIssueTypeMetaWithFields` — inspect required fields for the selected project and issue type. Use `requiredFieldsOnly: true` first.
-5. `mcp__atlassian__lookupJiraAccountId` — resolve an assignee's account ID when assignment is requested.
-6. `mcp__atlassian__searchJiraIssuesUsingJql` — optionally check for likely duplicates when the project and summary make duplication plausible.
-7. `mcp__atlassian__createJiraIssue` — create the ticket after confirmation.
-8. `mcp__atlassian__getJiraIssue` — verify the created issue using the returned key or ID.
+1. `getAccessibleAtlassianResources` — resolve `cloudId` when a usable Atlassian hostname is not already known.
+2. `getVisibleJiraProjects` — validate or find the project. Use `action: "create"` when checking create access.
+3. `getJiraProjectIssueTypesMetadata` — list issue types available in the project.
+4. `getJiraIssueTypeMetaWithFields` — inspect required fields for the selected project and issue type. Use `requiredFieldsOnly: true` first.
+5. `lookupJiraAccountId` — resolve an assignee's account ID when assignment is requested.
+6. `searchJiraIssuesUsingJql` — optionally check for likely duplicates when the project and summary make duplication plausible.
+7. `createJiraIssue` — create the ticket after confirmation.
+8. `getJiraIssue` — verify the created issue using the returned key or ID.
 
-Do not use hardcoded aliases such as `mcp__atlassian-mcp-server_*`, and do not guess IDs returned by metadata tools.
+Do not assume a prefix, and do not guess IDs returned by metadata tools. If a tool is missing, name it to the user and stop before creating anything.
 
 ## Cloud ID Resolution
 
 1. If the user provides an Atlassian URL, try its hostname (for example, `site.atlassian.net`) as `cloudId`.
-2. If no cloud ID is known or the hostname fails, call `mcp__atlassian__getAccessibleAtlassianResources`.
+2. If no cloud ID is known or the hostname fails, call `getAccessibleAtlassianResources`.
 3. Reuse the resolved cloud ID for every subsequent tool call.
 4. Surface authentication, site-selection, and permission errors without exposing credentials or tokens.
 
@@ -80,7 +80,7 @@ Use Markdown content unless the user explicitly needs Atlassian Document Format.
 
 ## Build the Create Payload
 
-Prepare these fields for `mcp__atlassian__createJiraIssue`:
+Prepare these fields for `createJiraIssue`:
 
 - `cloudId`
 - `projectKey`
@@ -106,7 +106,7 @@ Do not treat a duplicate search as proof that no duplicate exists; Jira search c
 
 ## Preview and Approval
 
-Before calling `mcp__atlassian__createJiraIssue`, show a concise preview containing:
+Before calling `createJiraIssue`, show a concise preview containing:
 
 - Project and issue type.
 - Summary.
@@ -118,8 +118,8 @@ Obtain confirmation before creation. If required information is missing, ask for
 
 ## Create and Verify
 
-1. Call `mcp__atlassian__createJiraIssue` once after approval.
-2. If the call returns a clear issue key or ID, call `mcp__atlassian__getJiraIssue` to verify the summary, type, description, status, assignee, and important fields.
+1. Call `createJiraIssue` once after approval.
+2. If the call returns a clear issue key or ID, call `getJiraIssue` to verify the summary, type, description, status, assignee, and important fields.
 3. If creation fails ambiguously, do not retry immediately. Search for the exact project and summary first to avoid creating a duplicate.
 4. Report the created issue key, URL when available, final status, and any fields Jira rejected or defaulted.
 
@@ -130,4 +130,4 @@ Obtain confirmation before creation. If required information is missing, ask for
 - Never guess cloud IDs, account IDs, custom-field IDs, or required-field values.
 - Never convert assumptions into requirements or acceptance criteria without labeling them.
 - Never expose credentials, tokens, or secrets copied from tool errors or source text.
-- If the requested operation is not ticket creation, stop and route it to the correct Jira skill.
+- If the requested operation is not ticket creation, stop using this skill and say so.

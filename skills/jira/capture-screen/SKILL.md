@@ -5,7 +5,9 @@ description: Capture sharp, captioned screenshots of a feature running in the br
 
 # Capture Screen
 
-Create clear, captioned screenshot files for a Jira story's acceptance criteria (AC). Use `agent-browser` to control the page and capture every raw image. Use `shoot.mjs --caption-only` to add captions.
+Create clear, captioned screenshot files for a Jira story's acceptance criteria (AC). Use `agent-browser` to control the page and capture every raw image. Use `shoot.mjs` to add captions; it reads the raw images and never takes a screenshot itself.
+
+Script paths below are relative to this skill's directory, the one that holds this `SKILL.md`. Run them from there or prefix that directory.
 
 ## Requirements
 
@@ -48,7 +50,7 @@ The redirect consumes `s.json` once, including on failed navigation. A busy port
 5. Inspect each raw image. Record its actual route without credentials. Never put tokens in `shots.json`.
 6. While the state is still open, record the rectangle of every element a step will point at. See [Annotate only when useful](#annotate-only-when-useful).
 
-Capture the intended region at the top left of the viewport. The caption script trims only from the bottom of a raw image, and does not use `clip.x` or `clip.y` in caption-only mode. Do not hide an AC mismatch by cropping.
+Capture the intended region at the top left of the viewport. The caption script trims only from the bottom of a raw image, and does not use `clip.x` or `clip.y`. Do not hide an AC mismatch by cropping.
 
 ## Annotate only when useful
 
@@ -83,7 +85,7 @@ Read the rectangle from the page while the state is open. Do not estimate it fro
 agent-browser --session <SESSION> eval "(() => { const el = document.querySelector('<selector>'); const r = el.getBoundingClientRect(); return JSON.stringify({ x: r.x, y: r.y, width: r.width, height: r.height, radius: parseFloat(getComputedStyle(el).borderTopLeftRadius) }); })()"
 ```
 
-Set `radius` to the element's own corner radius so the outline follows its shape. Use half the height for a pill or a circle. The default is 4. The script draws the outline 2 CSS pixels outside the element, in red with a white edge for contrast.
+Set `radius` to the element's own corner radius so the outline follows its shape. Use half the height for a pill or a circle. The default is 4. The script draws the outline 2 CSS pixels outside the element, in red with a white edge for contrast. Where the element touches the edge of the crop, the outline moves inward so all four sides stay visible.
 
 If the page is no longer open and only the image remains, measure the element's own border or background fill in the image and divide by the capture scale. Do not measure the color of its text; that finds the glyphs, not the element.
 
@@ -124,9 +126,9 @@ Alternatively, set `caption` to an Atlassian Document Format (ADF) version 1 `do
 ]
 ```
 
-Run `node scripts/shoot.mjs <ISSUE-KEY> --caption-only`. This reads all matching raw images and writes captioned images to `<dir>/out/`. It does not open the captured state or check `waitText`. Verify the page and raw images before running it. Choose `format` as `png`, `webp`, or `jpeg`; `quality` applies to WebP and JPEG.
+Run `node scripts/shoot.mjs <ISSUE-KEY>`. This reads all matching raw images and writes captioned images to `<dir>/out/`. It leaves `<dir>/raw/` unchanged and does not open the captured state. Verify the page and raw images before running it. Choose `format` as `png`, `webp`, or `jpeg`; `quality` applies to WebP and JPEG.
 
-The script adds an address strip from `baseUrl` and the shot's `url`, excluding query and hash. Set `showUrl` to false to omit it. To trim the bottom, lower `clip.height` and rerun `--caption-only`. Never use a caption or URL that misrepresents the captured state.
+The script adds an address strip from `baseUrl` and the shot's `url`, excluding query and hash. Set `showUrl` to false to omit it. To trim the bottom, lower `clip.height` and rerun the script. Never use a caption or URL that misrepresents the captured state.
 
 ## 5. Verify and deliver
 

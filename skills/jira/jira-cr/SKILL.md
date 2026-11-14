@@ -36,7 +36,7 @@ User-invoked: `/jira-cr` — use this skill explicitly when asked to create a CR
    - Compare the selected code changes against the Acceptance Criteria defined in the Jira ticket.
    - Map every AC to evidence and a status: implemented and verified, implemented but unverified, partially implemented, not implemented in the inspected scope, or unknown. Distinguish an absent change from functionality already present in surrounding code.
    - Preserve prior AC status/history as historical evidence; explain changes in status rather than silently replacing them.
-   - Identify the affected areas in the codebase (Configurations, Modules, Features, Components) and describe them in product terms, as the team template examples do: Modules are module names (for example `Order`), Features are on-screen feature names, Components are a screen or widget path (for example `Worklist > Inpatients widget`), and Configurations are config toggle names with the site they apply to. Leave file and class names out of the template.
+   - Identify the affected areas in the codebase (Configurations, Modules, Features, Components) and describe them in product terms: Modules are module names (for example `Order`), Features are on-screen feature names, Components are a screen or widget path (for example `Worklist > Inpatients widget`), and Configurations are config toggle names with the site they apply to. Leave file and class names out of the template.
    - Report checks actually run, their results, and checks not run. Code inspection alone does not establish runtime correctness or full acceptance.
    - For API work, describe the endpoint/method, relevant request fields, authorization, processing and source-data resolution, duplicate behavior, response statuses, and scope when supported by the code. Mark unknown contracts explicitly.
 5. **Summarize using Template**:
@@ -63,7 +63,7 @@ User-invoked: `/jira-cr` — use this skill explicitly when asked to create a CR
    | Components     | [Details or N/A] |
    ```
 
-   - Number the rows but do not write `AC1` or `AC2` labels. The team examples describe each criterion directly.
+   - Number the rows but do not write `AC1` or `AC2` labels. Describe each criterion directly.
    - **Atlassian Document Format (ADF)** is the publishing format. The Markdown template defines content and order, not the literal body syntax. Build a JSON document with `version: 1`, `type: "doc"`, and ordered `content` nodes.
      - Use `heading` and `paragraph` nodes for sections. Use `table`, `tableRow`, `tableHeader`, and `tableCell` nodes for both tables, with one numbered criterion per Summary table row.
      - Apply both `strong` and `textColor` marks to the level-1 `Story & CR` heading, using `#36b37e`.
@@ -80,13 +80,13 @@ User-invoked: `/jira-cr` — use this skill explicitly when asked to create a CR
      - Before posting, reread the comment and cut filler, repeated points, and wording that sounds machine-written.
 6. **Draft and Publish**:
 
-   - **First CR summary on the ticket**: add a brief line at the top stating that this is an AI-generated CR summary based on the inspected change scope.
+   - **First CR summary on the ticket**: add a brief line at the top stating that this is an AI-generated CR summary based on the inspected change scope. Keep the words `AI-generated CR summary` in English exactly as written, whatever the summary's language; the next run finds this comment by them.
    - **A previous CR summary already exists**: the new comment must reference the old one so readers can follow the update history:
-     - Open with an update banner instead of the first-time line, e.g. `> 🔄 Updated CR summary — supersedes the previous summary posted on 2026-08-19 (comment 400128).` Link to the previous comment when possible: `https://<site>.atlassian.net/browse/<TICKET>?focusedCommentId=<commentId>#comment-<commentId>`.
+     - Open with an update banner instead of the first-time line, as the first `paragraph` node, e.g. `🔄 Updated CR summary — supersedes the previous summary posted on 2026-08-19 (comment 400128).` Keep the words `Updated CR summary` in English exactly as written. Link to the previous comment when possible: `https://<site>.atlassian.net/browse/<TICKET>?focusedCommentId=<commentId>#comment-<commentId>`.
      - Do not add a changes section. Update the tables in place. If the previous summary says something the current code contradicts, correct it in the table and name the correction in the banner line.
      - Carry forward still-valid information from the previous summary that the diff cannot regenerate (e.g., screenshots) — if they still apply, state so explicitly instead of silently dropping them.
      - Keep the same language as the previous summary unless the user asks for a different language.
-   - **Language and screenshots**: for a first summary, use the language of the team template examples (Thai, with English product and UI names) unless the user or repository instructions say otherwise. Add an image when there is one: a screenshot, or for a change with no screen, test output, an API response, or a database record before and after. An image is not required on every row, but do not leave the cell empty. When an image is expected but not attached yet, write `รอแนบภาพ` and name what to attach, such as `รอแนบภาพ: ผลรัน test`. When no image is needed, write `ไม่มีภาพ`. Write `ภาพเดิมใน comment <id>` when the image is carried forward. Keep the pass or fail result in the Summary cell, and do not color this text.
+   - **Language and screenshots**: for a first summary, write in Thai with English product and UI names unless the user or repository instructions say otherwise. Add an image when there is one: a screenshot, or for a change with no screen, test output, an API response, or a database record before and after. An image is not required on every row, but do not leave the cell empty. When an image is expected but not attached yet, write `รอแนบภาพ` and name what to attach, such as `รอแนบภาพ: ผลรัน test`. When no image is needed, write `ไม่มีภาพ`. Write `ภาพเดิมใน comment <id>` when the image is carried forward. Keep the pass or fail result in the Summary cell, and do not color this text.
 
    - Prepare the complete comment first. A request to summarize or review ends with a local draft unless publication was explicitly requested. If the user already asked to post it, continue without asking again. If publication is needed but not yet authorized, request approval only for the completed, reviewable draft.
    - Before publishing, confirm the issue and re-read relevant prior summaries to avoid duplicates or superseding a newer update. If the selected changes moved since analysis, refresh the evidence and draft first.
