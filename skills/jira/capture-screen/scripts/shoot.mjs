@@ -22,7 +22,14 @@
 //       "url": "/en/some/route",                    // path on baseUrl
 //       "waitText": ["Visit Details", "Lab Number"],// all must appear in document.body.innerText
 //       "clip": { "x": 0, "y": 0, "width": 1440, "height": 470 },
-//       "steps": [{"x": 100, "y": 80, "text": "Open the summary"}], // marker center in crop CSS pixels
+//       "steps": [
+//         // Framed step: outlines the element's border box and points a numbered pin at it.
+//         // frame is in crop CSS pixels; radius is the element's own corner radius (default 4).
+//         // pin is "top" | "right" | "left" | "bottom"; omitted = first side with room, in that order.
+//         {"frame": {"x": 940, "y": 620, "width": 116, "height": 40, "radius": 4}, "text": "Press Upload"},
+//         // Plain step: numbered circle centred on x/y, for a spot with no element to outline.
+//         {"x": 100, "y": 80, "text": "Open the summary"}
+//       ],
 //       "caption": "AC1 ..."
 //       // Or use an array: [{"text":"AC1", "style":"bold"}, {"text":" details"}]
 //       // Styles: bold, italic, underline, strikethrough, code, subscript, superscript.
@@ -110,13 +117,64 @@ function validateAdf(node) {
   }
   for (const child of node.content || []) validateAdf(child);
 }
+// Framed steps, in CSS pixels. The frame sits FRAME_GAP outside the element's border box;
+// the pin is a PIN_SIZE disc with one sharp corner, and that corner touches the frame's outer edge.
+const FRAME_GAP = 2;
+const FRAME_EDGE = FRAME_GAP + 2;
+const PIN_SIZE = 20;
+// Direction from the sharp corner to the rest of the pin, per side.
+const pinGrowth = { top: [1, -1], right: [1, -1], left: [-1, -1], bottom: [1, 1] };
+const pinSides = ['top', 'right', 'left', 'bottom'];
+function pinTip(shot, step) {
+  const f = step.frame;
+  const clip = shot.clip || {};
+  const numeric = [f?.x, f?.y, f?.width, f?.height].every(Number.isFinite);
+  if (!numeric || f.width <= 0 || f.height <= 0 || f.x < 0 || f.y < 0 ||
+      f.x + f.width > clip.width || f.y + f.height > clip.height) {
+    throw new Error(`${shot.file}: step frame needs x, y, width, height inside the clip`);
+  }
+  if (f.radius !== undefined && !(Number.isFinite(f.radius) && f.radius >= 0)) {
+    throw new Error(`${shot.file}: step frame radius must be a non-negative number`);
+  }
+  if (step.pin !== undefined && !pinSides.includes(step.pin)) {
+    throw new Error(`${shot.file}: step pin must be one of ${pinSides.join(', ')}`);
+  }
+  const scale = spec.scale || 2;
+  // Snap the frame outward to whole device pixels so its straight edges render without blur.
+  const left = Math.floor(f.x * scale) / scale;
+  const top = Math.floor(f.y * scale) / scale;
+  f.width = Math.ceil((f.x + f.width) * scale) / scale - left;
+  f.height = Math.ceil((f.y + f.height) * scale) / scale - top;
+  f.x = left;
+  f.y = top;
+  const cx = Math.round((f.x + f.width / 2) * scale) / scale;
+  const cy = Math.round((f.y + f.height / 2) * scale) / scale;
+  const tips = {
+    top: { x: cx, y: f.y - FRAME_EDGE },
+    right: { x: f.x + f.width + FRAME_EDGE, y: cy },
+    left: { x: f.x - FRAME_EDGE, y: cy },
+    bottom: { x: cx, y: f.y + f.height + FRAME_EDGE },
+  };
+  const fits = (side) => {
+    const t = tips[side];
+    const [dx, dy] = pinGrowth[side];
+    const far = { x: t.x + dx * (PIN_SIZE + 2), y: t.y + dy * (PIN_SIZE + 2) };
+    return [t, far].every((point) => point.x >= 0 && point.x <= clip.width && point.y >= 0 && point.y <= clip.height);
+  };
+  const side = step.pin ? (fits(step.pin) ? step.pin : null) : pinSides.find(fits);
+  if (!side) throw new Error(`${shot.file}: no room in the clip for the pin of step "${step.text}"`);
+  return { ...tips[side], side, grow: pinGrowth[side] };
+}
 for (const shot of spec.shots || []) {
   if (shot.steps !== undefined) {
     if (!Array.isArray(shot.steps) || shot.steps.length > 3) throw new Error('steps must be an array of at most 3 items');
     for (const step of shot.steps) {
-      if (typeof step.text !== 'string' || !step.text.trim() || !Number.isFinite(step.x) || !Number.isFinite(step.y) ||
+      if (typeof step.text !== 'string' || !step.text.trim()) throw new Error(`${shot.file}: each step needs text`);
+      if (step.frame !== undefined) {
+        step.tip = pinTip(shot, step);
+      } else if (!Number.isFinite(step.x) || !Number.isFinite(step.y) ||
           step.x < 14 || step.y < 14 || step.x > shot.clip?.width - 14 || step.y > shot.clip?.height - 14) {
-        throw new Error('Each step needs text and coordinates at least 14 CSS pixels inside the clip');
+        throw new Error(`${shot.file}: a step without frame needs coordinates at least 14 CSS pixels inside the clip`);
       }
     }
   }
@@ -317,7 +375,35 @@ for (const s of rawShots) {
     img.style.cssText = 'display:block;width:${width}px;';
     crop.append(img);
     const steps = ${JSON.stringify(s.steps || [])};
+    const svgEl = (name, attrs) => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', name);
+      for (const key of Object.keys(attrs)) el.setAttribute(key, attrs[key]);
+      return el;
+    };
+    const red = '#b42318';
+    const overlay = svgEl('svg', { width: ${width}, height: ${s.clip.height}, viewBox: '0 0 ${width} ${s.clip.height}' });
+    overlay.style.cssText = 'position:absolute;left:0;top:0;overflow:hidden;';
+    crop.append(overlay);
     steps.forEach((step, index) => {
+      if (step.frame) {
+        // Frame follows the element's border box: same corners, grown by the gap. White under red for contrast.
+        const f = step.frame;
+        const grow = ${FRAME_GAP} + 1;
+        const w = f.width + grow * 2;
+        const h = f.height + grow * 2;
+        const rect = { x: f.x - grow, y: f.y - grow, width: w, height: h, rx: Math.min((f.radius ?? 4) + grow, w / 2, h / 2), fill: 'none' };
+        overlay.append(svgEl('rect', { ...rect, stroke: '#fff', 'stroke-width': 4 }), svgEl('rect', { ...rect, stroke: red, 'stroke-width': 2 }));
+        // Pin: a disc whose sharp corner is the tip, drawn growing up and right, then mirrored for its side.
+        const r = ${PIN_SIZE} / 2;
+        const [dx, dy] = step.tip.grow;
+        const shape = { d: 'M0 0V' + -r + 'A' + r + ' ' + r + ' 0 1 1 ' + r + ' 0Z', transform: 'translate(' + step.tip.x + ' ' + step.tip.y + ') scale(' + dx + ' ' + -dy + ')' };
+        overlay.append(svgEl('path', { ...shape, fill: '#fff', stroke: '#fff', 'stroke-width': 3, 'stroke-linejoin': 'round' }), svgEl('path', { ...shape, fill: red }));
+        const label = svgEl('text', { x: step.tip.x + dx * r, y: step.tip.y + dy * r, fill: '#fff', 'text-anchor': 'middle', 'dominant-baseline': 'central' });
+        label.style.font = '600 11px/1 system-ui,sans-serif';
+        label.textContent = String(index + 1);
+        overlay.append(label);
+        return;
+      }
       const marker = document.createElement('span');
       marker.style.cssText = 'position:absolute;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border:2px solid white;border-radius:50%;background:#b42318;color:white;font:600 14px/1 system-ui,sans-serif;box-sizing:border-box;';
       marker.style.left = (step.x - 12) + 'px';

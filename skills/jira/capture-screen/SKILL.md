@@ -46,24 +46,68 @@ The redirect consumes `s.json` once, including on failed navigation. A busy port
 3. After navigation or a page change, take another snapshot. Refs can change. Wait for the expected state with `wait --text "expected text"` or an appropriate selector. If the wait fails, do not report the shot as verified.
 4. Read visible numbers using `get text`. Hide development overlays before capture. Save each image with `agent-browser --session <SESSION> screenshot "<dir>/raw/NN-slug.png"`.
 5. Inspect each raw image. Record its actual route without credentials. Never put tokens in `shots.json`.
+6. While the state is still open, record the rectangle of every element a step will point at. See [Annotate only when useful](#annotate-only-when-useful).
 
 Capture the intended region at the top left of the viewport. The caption script trims only from the bottom of a raw image, and does not use `clip.x` or `clip.y` in caption-only mode. Do not hide an AC mismatch by cropping.
 
 ## Annotate only when useful
 
-When an image describes steps, add a `steps` array to its shot in `shots.json`. Each item has `x`, `y`, and `text`. Coordinates are the marker center in CSS pixels relative to the top-left of the captured crop. For example: `"steps": [{"x": 100, "y": 80, "text": "Open the summary"}]`. The script adds numbered red markers to the image and matching descriptions beneath the caption, in array order. Red identifies the marker, not necessarily an error. Describe any error in `text`. Place markers outside text, values, controls, and other evidence. Inspect their positions in the output.
+When an image describes steps, add a `steps` array to its shot in `shots.json`. The script draws the markers on the output and lists each step's `text` beneath the caption, numbered in array order. The raw image stays unchanged. Red identifies the marker, not necessarily an error. Describe any error in `text`.
 
 Use no more than three steps per image. Split longer sequences across images. Capture separate images when a step changes the page state so each image shows the relevant result. Images without steps need no markers.
 
-Add a red rectangle to identify an area such as a table, field, or error message. Add a red arrow to point to a small target or show where to look. Use a thin white outline if needed for contrast. Add shapes only when they clarify the evidence, and do not cover text, values, or controls. The script does not draw rectangles or arrows; use an image tool as described below.
+### Frame the element
 
-If annotation is needed, edit a copy of the raw image with an available image tool before captioning. Keep the original raw image unchanged and use the annotated copy as the matching raw file for the caption run. Inspect the final image against the original. If a suitable tool is unavailable, deliver the unmarked image and explain the relevant location in the caption.
+A step that points at an element takes a `frame`. The script outlines the element and points a numbered pin at the outline.
+
+```json
+"steps": [
+  { "frame": { "x": 386, "y": 438.5, "width": 667.5, "height": 68.5, "radius": 4 }, "text": "ไฟล์ที่ 1 พร้อมอัปโหลด" },
+  { "frame": { "x": 941, "y": 621, "width": 115, "height": 40, "radius": 4 }, "pin": "left", "text": "กด UPLOAD (2)" }
+]
+```
+
+`frame` is the border box of the element the user clicks or the step describes, in CSS pixels from the top-left of the captured crop. It is not the box of the label text, and not a parent that includes empty space. Frame the whole control:
+
+| Target | Frame |
+| --- | --- |
+| Button | The button, including its icon and padding |
+| List or table row | The whole row element, not only its name |
+| Chip or tag | The whole pill, including its badge and trailing icon |
+| Icon button inside another control | Only the icon button |
+| Card or summary tile | The whole card, including its title and values |
+
+Read the rectangle from the page while the state is open. Do not estimate it from the image:
+
+```bash
+agent-browser --session <SESSION> eval "(() => { const el = document.querySelector('<selector>'); const r = el.getBoundingClientRect(); return JSON.stringify({ x: r.x, y: r.y, width: r.width, height: r.height, radius: parseFloat(getComputedStyle(el).borderTopLeftRadius) }); })()"
+```
+
+Set `radius` to the element's own corner radius so the outline follows its shape. Use half the height for a pill or a circle. The default is 4. The script draws the outline 2 CSS pixels outside the element, in red with a white edge for contrast.
+
+If the page is no longer open and only the image remains, measure the element's own border or background fill in the image and divide by the capture scale. Do not measure the color of its text; that finds the glyphs, not the element.
+
+### Place the pin
+
+The pin is a numbered disc with one sharp corner. It sits outside the frame with that corner on the frame edge. `pin` chooses the side: `top`, `right`, `left`, or `bottom`. When omitted, the script uses the first of those sides that has room inside the crop. It cannot see the page content, so set `pin` yourself when the default side would cover text, a value, an icon, or a neighboring row. Inspect every pin in the output.
+
+### Other marks
+
+A step with `x` and `y` instead of `frame` draws a numbered circle centered on that point. Use it only for a spot that has no element to outline.
+
+The script does not draw arrows or unnumbered shapes. If one is needed, save the original to `<dir>/source/`, edit a copy with an available image tool, and use the copy as the raw file for the caption run. Do not cover text, values, or controls, and inspect the result against the original. If a suitable tool is unavailable, deliver the unmarked image and explain the location in the caption.
 
 ## 4. Add captions
 
 Document each shot in `shots.json` using the fields described at the top of `scripts/shoot.mjs`. Use the same file stem as its raw image. Set `clip.width` to the raw image width in CSS pixels, and `clip.height` to the desired height. Set `viewport` wide enough for every clip. Set `baseUrl` and `captionPath` to a page accessible to the separate caption browser.
 
-Write each caption in the story's language. Include the AC number, what the image proves, and relevant visible numbers. Put step descriptions in `steps` so the script numbers them consistently. Describe only what the image shows or the action to take; do not claim an unshown result. Use the system font or set `captionFont` to an app font. Do not download fonts without asking.
+Write each caption in the story's language, in this order:
+
+1. The image's position in the set, in bold, for example `ลำดับที่ 3`.
+2. The AC numbers and the state shown, in bold, for example `AC7 เลือกหลายไฟล์พร้อมกัน`.
+3. What the image proves, with the relevant visible text and numbers.
+
+Put step descriptions in `steps`, not in the caption. The script appends them as a numbered list, so a caption that also contains `1.` and `2.` lines shows the steps twice. Describe only what the image shows or the action to take; do not claim an unshown result. Use the system font or set `captionFont` to an app font. Do not download fonts without asking.
 
 Use a plain string for an unstyled caption. For selective formatting, use an array of text parts. Supported styles are `bold`, `italic`, `underline`, `strikethrough`, `code`, `subscript`, and `superscript`; omit `style` for normal text. Use `\n` in a JSON string for a new line. Apply emphasis sparingly and avoid long italic Thai passages. Use strikethrough for superseded text, not to conceal data.
 
@@ -71,10 +115,12 @@ Alternatively, set `caption` to an Atlassian Document Format (ADF) version 1 `do
 
 ```json
 "caption": [
-  { "text": "AC1 การเลือกคลังเลือด", "style": "bold" },
-  { "text": "\n1. กดปุ่ม " },
-  { "text": "Open summary", "style": "bold" },
-  { "text": "\n2. เลือกคลังเลือด" }
+  { "text": "ลำดับที่ 2", "style": "bold" },
+  { "text": "\n" },
+  { "text": "AC2, AC3 Expand แถวที่ยังไม่มีไฟล์", "style": "bold" },
+  { "text": "\nแสดง " },
+  { "text": "No file attached.", "style": "bold" },
+  { "text": " และปุ่ม Upload document" }
 ]
 ```
 
@@ -84,7 +130,7 @@ The script adds an address strip from `baseUrl` and the shot's `url`, excluding 
 
 ## 5. Verify and deliver
 
-- Open the output images. Check the crop, resolution, caption, Thai text, and displayed numbers. Check that relevant subtotals add up. The output width is `scale` times `clip.width`; the raw image must have enough detail.
+- Open the output images. Check the crop, resolution, caption, Thai text, and displayed numbers. Check that each frame follows its element's edge and that no pin covers evidence. Check that relevant subtotals add up. The output width is `scale` times `clip.width`; the raw image must have enough detail.
 - Check the script's `loaded fonts:` output when using an app font. Thai text must not render as boxes.
 - Report AC mismatches, states not captured or not tried, and any session invalidated. Use only test or seed data. Blur or skip real patient data, or disclose that apparent test data was not verified.
 - Close the browser with `agent-browser --session <SESSION> close` only if you created that session for this task. After a caption-script crash, run `node scripts/shoot.mjs <ISSUE-KEY> --clean` to remove its profile. `--keep-profile` retains it.
